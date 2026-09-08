@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Control Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Public+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --ink: #1B1B18;
+    --ink-soft: #29271F;
+    --paper: #F1EBD8;
+    --paper-dim: #E4DCC2;
+    --oxblood: #7A2E2A;
+    --brass: #B08D57;
+    --slate: #8A8371;
+    --line: #C9BEA0;
+    --serif: 'Spectral', Georgia, serif;
+    --sans: 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--ink);
+    background-image: radial-gradient(circle at 20% 15%, #232019 0%, var(--ink) 60%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    font-family: var(--sans);
+  }
+
+  .desk {
+    width: 100%;
+    max-width: 780px;
+    position: relative;
+  }
+
+  .sheet-back {
+    position: absolute;
+    inset: 10px -6px -10px 6px;
+    background: var(--paper-dim);
+    transform: rotate(-1.1deg);
+    border-radius: 2px;
+    z-index: 0;
+  }
+
+  .ledger {
+    position: relative;
+    z-index: 1;
+    background: var(--paper);
+    padding: 44px 48px 36px;
+    border-radius: 2px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+  }
+
+  .kicker {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--oxblood);
+    letter-spacing: 0.02em;
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--ink);
+    margin: 0 0 10px;
+    line-height: 1.15;
+  }
+
+  .lede {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17px;
+    color: #4B4738;
+    line-height: 1.5;
+    margin: 0 0 32px;
+    max-width: 56ch;
+  }
+
+  .stage-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .stamp {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2.5px solid var(--oxblood);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--oxblood);
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.1;
+    transform: rotate(-6deg);
+    transition: border-color 0.4s ease, color 0.4s ease;
+  }
+
+  .stage-titles { flex: 1; }
+
+  .era-name {
+    font-family: var(--serif);
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .pop-label {
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: var(--slate);
+    margin: 3px 0 0;
+  }
+
+  .stage-desc {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: #33301F;
+    margin: 0 0 22px;
+    min-height: 76px;
+  }
+
+  .figures-panel {
+    background: var(--ink);
+    border-radius: 3px;
+    padding: 20px;
+    margin-bottom: 22px;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .figures-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    max-width: 100%;
+  }
+
+  .fig {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--slate);
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+
+  .fig.large {
+    width: 20px;
+    height: 20px;
+  }
+
+  .fig.badge {
+    background: var(--brass);
+  }
+
+  .gauges {
+    margin-bottom: 26px;
+  }
+
+  .gauge-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+
+  .gauge-label {
+    width: 130px;
+    flex-shrink: 0;
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .gauge-track {
+    flex: 1;
+    height: 8px;
+    background: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .gauge-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+  }
+
+  .gauge-fill.personal { background: var(--brass); }
+  .gauge-fill.scale { background: var(--oxblood); }
+
+  .citation {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--slate);
+    margin: 0 0 30px;
+  }
+
+  .slider-wrap {
+    border-top: 1px solid var(--line);
+    padding-top: 26px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 0 0 12px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--brass);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1.5px var(--oxblood);
+    cursor: pointer;
+    margin-top: -8px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--brass);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1.5px var(--oxblood);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+  }
+
+  .stop-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--slate);
+    font-weight: 500;
+  }
+
+  .stop-labels span {
+    max-width: 90px;
+    text-align: center;
+  }
+
+  .stop-labels span.active {
+    color: var(--oxblood);
+    font-weight: 600;
+  }
+
+  .footnote {
+    font-size: 12px;
+    color: var(--slate);
+    text-align: center;
+    margin-top: 22px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .ledger { padding: 30px 24px 26px; }
+    h1 { font-size: 27px; }
+    .stage-head { flex-wrap: wrap; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="desk">
+  <div class="sheet-back"></div>
+  <div class="ledger">
+    <p class="kicker">Companion artifact, Week 1 reflective diary</p>
+    <h1>The Control Ledger</h1>
+    <p class="lede">Move through three moments in the history of assessment. Watch how the mechanism changes as the population that needs to be controlled grows.</p>
+
+    <div class="stage-head">
+      <div class="stamp" id="stamp">EST.</div>
+      <div class="stage-titles">
+        <p class="era-name" id="eraName"></p>
+        <p class="pop-label" id="popLabel"></p>
+      </div>
+    </div>
+
+    <p class="stage-desc" id="stageDesc"></p>
+
+    <div class="figures-panel">
+      <div class="figures-grid" id="figuresGrid"></div>
+    </div>
+
+    <div class="gauges">
+      <div class="gauge-row">
+        <span class="gauge-label">Personalization</span>
+        <div class="gauge-track"><div class="gauge-fill personal" id="gaugePersonal"></div></div>
+      </div>
+      <div class="gauge-row">
+        <span class="gauge-label">Scale of control</span>
+        <div class="gauge-track"><div class="gauge-fill scale" id="gaugeScale"></div></div>
+      </div>
+    </div>
+
+    <p class="citation" id="citation"></p>
+
+    <div class="slider-wrap">
+      <input type="range" id="stageSlider" min="0" max="2" step="1" value="0" aria-label="Move through history">
+      <div class="stop-labels">
+        <span id="label0">Nippur</span>
+        <span id="label1">Han Dynasty</span>
+        <span id="label2">Lancaster's Classroom</span>
+      </div>
+    </div>
+
+    <p class="footnote">Built to accompany the reflection on assessment as a tool of compliance, sorting, and social control across three historical eras.</p>
+  </div>
+</div>
+
+<script>
+  const stages = [
+    {
+      era: "Old Babylonian Nippur",
+      pop: "One master, one apprentice",
+      desc: "A teacher's model text sits beside the student's copy on the same tablet. Correction is immediate and private, meant to teach rather than to rank.",
+      citation: "Beyer, 2021",
+      stampText: "EST.",
+      personal: 95,
+      scale: 8,
+      figureCount: 2,
+      figureSize: "large",
+      badges: 0
+    },
+    {
+      era: "Han Dynasty Imperial Examination",
+      pop: "A narrow class of elites",
+      desc: "Three days and two nights of testing decide who gains access to state power. Passing proves loyalty to the dynasty, not mastery of learning.",
+      citation: "Ko, 2017",
+      stampText: "PASS",
+      personal: 45,
+      scale: 55,
+      figureCount: 16,
+      figureSize: "medium",
+      badges: 0
+    },
+    {
+      era: "Lancaster's Monitorial Classroom",
+      pop: "Hundreds of students at once",
+      desc: "Students are ranked by proficiency and compete for scarce badges and medals, a reward system that converts compliance into a currency still traded today as grades.",
+      citation: "Hogan, 1989; Giroux & McLaren, 1986",
+      stampText: "RANK",
+      personal: 10,
+      scale: 96,
+      figureCount: 54,
+      figureSize: "small",
+      badges: 7
+    }
+  ];
+
+  const slider = document.getElementById('stageSlider');
+  const eraName = document.getElementById('eraName');
+  const popLabel = document.getElementById('popLabel');
+  const stageDesc = document.getElementById('stageDesc');
+  const citation = document.getElementById('citation');
+  const stamp = document.getElementById('stamp');
+  const gaugePersonal = document.getElementById('gaugePersonal');
+  const gaugeScale = document.getElementById('gaugeScale');
+  const figuresGrid = document.getElementById('figuresGrid');
+  const stopLabels = [document.getElementById('label0'), document.getElementById('label1'), document.getElementById('label2')];
+
+  function renderFigures(stage) {
+    figuresGrid.innerHTML = '';
+    const sizeClass = stage.figureSize === 'large' ? 'large' : '';
+    for (let i = 0; i < stage.figureCount; i++) {
+      const fig = document.createElement('div');
+      fig.className = 'fig ' + sizeClass;
+      if (i < stage.badges) fig.className += ' badge';
+      figuresGrid.appendChild(fig);
+    }
+  }
+
+  function render(index) {
+    const s = stages[index];
+    eraName.textContent = s.era;
+    popLabel.textContent = s.pop;
+    stageDesc.textContent = s.desc;
+    citation.textContent = '\u2014 ' + s.citation;
+    stamp.textContent = s.stampText;
+    gaugePersonal.style.width = s.personal + '%';
+    gaugeScale.style.width = s.scale + '%';
+    renderFigures(s);
+    stopLabels.forEach((el, i) => el.classList.toggle('active', i === index));
+  }
+
+  slider.addEventListener('input', (e) => render(parseInt(e.target.value, 10)));
+  render(0);
+</script>
+
+</body>
+</html>
