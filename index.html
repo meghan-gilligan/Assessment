@@ -255,8 +255,9 @@
   }
 
   .stop-labels {
-    display: flex;
-    justify-content: space-between;
+    position: relative;
+    height: 34px;
+    margin: 0 10px;
     font-family: var(--font-body);
     font-size: 12.5px;
     color: var(--slate);
@@ -264,11 +265,20 @@
   }
 
   .stop-labels span {
-    max-width: 90px;
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    width: 78px;
     text-align: center;
-    font-size: 12px;
+    font-size: 11.5px;
     line-height: 1.3;
   }
+
+  .stop-labels span:nth-child(1) { left: 0%; }
+  .stop-labels span:nth-child(2) { left: 25%; }
+  .stop-labels span:nth-child(3) { left: 50%; }
+  .stop-labels span:nth-child(4) { left: 75%; }
+  .stop-labels span:nth-child(5) { left: 100%; }
 
   .stop-labels span.active {
     color: var(--accent-orange);
@@ -301,7 +311,7 @@
   <div class="ledger">
     <p class="kicker">Companion artifact, Week 1 reflective diary</p>
     <h1>The Control Ledger</h1>
-    <p class="lede">Move through four moments in the history of assessment, ending with today's classroom, where my own 2008 exam and authentic assessment coexist. Watch how the mechanism changes as the population that needs to be controlled grows.</p>
+    <p class="lede">Move through five moments in the history of assessment, from ancient scribes to today's classroom, where my own 2008 exam and authentic assessment coexist, and ending with a projection of how AI may reshape it. Watch how the mechanism changes as the population that needs to be controlled grows.</p>
 
     <div class="stage-head">
       <div class="stamp" id="stamp">EST.</div>
@@ -331,16 +341,17 @@
     <p class="citation" id="citation"></p>
 
     <div class="slider-wrap">
-      <input type="range" id="stageSlider" min="0" max="3" step="1" value="0" aria-label="Move through history">
+      <input type="range" id="stageSlider" min="0" max="4" step="1" value="0" aria-label="Move through history">
       <div class="stop-labels">
         <span id="label0">Nippur</span>
         <span id="label1">Han Dynasty</span>
         <span id="label2">Lancaster's Classroom</span>
         <span id="label3">Today's Classroom</span>
+        <span id="label4">Future Classroom</span>
       </div>
     </div>
 
-    <p class="footnote">Built to accompany the reflection on assessment as a tool of compliance, sorting, and social control, from ancient scribes to today.</p>
+    <p class="footnote">Built to accompany the reflection on assessment as a tool of compliance, sorting, and social control, from ancient scribes to a projected AI-mediated future.</p>
   </div>
 </div>
 
@@ -397,6 +408,21 @@
       figureSize: "small",
       badges: 8,
       highlightClass: "modern"
+    },
+    {
+      era: "The AI-Mediated Classroom",
+      pop: "Every student, every keystroke",
+      desc: "Adaptive systems could give personalized feedback to every student at once, the kind of correction Nippur offered one apprentice at a time. The same systems can also track every keystroke, flag deviation, and score effort in real time. For the first time, personalization and mass surveillance may stop being a trade-off, which could make assessment a more complete form of compliance than any era before it.",
+      citation: "Author's projection",
+      stampText: "NEXT",
+      personal: 68,
+      scale: 97,
+      figureCount: 60,
+      figureSize: "small",
+      badges: 15,
+      highlightClass: "modern",
+      badges2: 15,
+      highlightClass2: "badge"
     }
   ];
 
@@ -409,16 +435,22 @@
   const gaugePersonal = document.getElementById('gaugePersonal');
   const gaugeScale = document.getElementById('gaugeScale');
   const figuresGrid = document.getElementById('figuresGrid');
-  const stopLabels = [0, 1, 2, 3].map(i => document.getElementById('label' + i));
+  const stopLabels = [0, 1, 2, 3, 4].map(i => document.getElementById('label' + i));
 
   function renderFigures(stage) {
     figuresGrid.innerHTML = '';
     const sizeClass = stage.figureSize === 'large' ? 'large' : '';
     const highlightClass = stage.highlightClass || 'badge';
+    const highlightClass2 = stage.highlightClass2;
+    const badges2 = stage.badges2 || 0;
     for (let i = 0; i < stage.figureCount; i++) {
       const fig = document.createElement('div');
       fig.className = 'fig ' + sizeClass;
-      if (i < stage.badges) fig.className += ' ' + highlightClass;
+      if (i < stage.badges) {
+        fig.className += ' ' + highlightClass;
+      } else if (highlightClass2 && i < stage.badges + badges2) {
+        fig.className += ' ' + highlightClass2;
+      }
       figuresGrid.appendChild(fig);
     }
   }
