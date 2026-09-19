@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Assumption Ledger — A Concept Map</title>
+<style>
+  :root{
+    --bg-ink:#1B1B18;
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F2;
+    --text-navy:#003C71;
+    --accent-blue:#0077CA;
+    --accent-orange:#E75D2A;
+    --slate:#5B6770;
+    --line:#D8D8D8;
+    --dots-bg:#00283C;
+    --font-header:'Ubuntu', -apple-system, sans-serif;
+    --font-body:'ITC Franklin Gothic Std','Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-ink);
+    background-image:radial-gradient(var(--dots-bg) 1px, transparent 1px);
+    background-size:18px 18px;
+    font-family:var(--font-body);
+    color:var(--text-navy);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .ledger{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:2px;
+    padding:40px 32px 36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:28px;
+  }
+  .kicker{
+    font-family:var(--font-header);
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:var(--font-header);
+    font-size:clamp(24px,4vw,34px);
+    margin:0 0 10px;
+    color:var(--text-navy);
+    line-height:1.15;
+  }
+  .byline{
+    font-size:13px;
+    color:var(--slate);
+    margin:0;
+  }
+  .intro{
+    font-size:15px;
+    line-height:1.65;
+    color:#26313a;
+    max-width:70ch;
+    margin:0 0 30px;
+  }
+  .intro strong{color:var(--text-navy);}
+
+  /* --- Map --- */
+  .map-wrap{
+    position:relative;
+    margin:0 auto 32px;
+    max-width:640px;
+  }
+  svg.connectors{
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    pointer-events:none;
+    z-index:0;
+  }
+  svg.connectors path{
+    fill:none;
+    stroke:var(--line);
+    stroke-width:2;
+    transition:stroke .25s ease, stroke-width .25s ease;
+  }
+  svg.connectors path.active{
+    stroke:var(--accent-blue);
+    stroke-width:3;
+  }
+  .map-grid{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    grid-template-rows:repeat(3, auto);
+    gap:14px;
+    align-items:center;
+    justify-items:center;
+  }
+  .hub{
+    grid-column:2; grid-row:2;
+    width:150px; height:150px;
+    border-radius:50%;
+    background:var(--text-navy);
+    color:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    font-family:var(--font-header);
+    font-size:13px;
+    font-weight:700;
+    line-height:1.3;
+    padding:14px;
+    box-shadow:0 0 0 4px var(--paper), 0 0 0 6px var(--line);
+  }
+  .node{
+    width:118px; height:118px;
+    border-radius:50%;
+    background:var(--paper-dim);
+    border:2px solid var(--line);
+    color:var(--text-navy);
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    font-size:12.5px;
+    font-weight:600;
+    line-height:1.25;
+    padding:10px;
+    cursor:pointer;
+    transition:transform .18s ease, border-color .18s ease, background .18s ease;
+    font-family:var(--font-header);
+  }
+  .node:hover{transform:translateY(-2px);}
+  .node.active{
+    background:var(--accent-blue);
+    border-color:var(--accent-blue);
+    color:var(--paper);
+  }
+  .n1{grid-column:1; grid-row:1;}
+  .n2{grid-column:3; grid-row:1;}
+  .n3{grid-column:1; grid-row:3;}
+  .n4{grid-column:3; grid-row:3;}
+
+  @media (max-width:620px){
+    .map-grid{display:none;}
+    .map-wrap svg{display:none;}
+    .mobile-list{display:flex; flex-direction:column; gap:10px;}
+    .mobile-list .node{
+      width:100%; height:auto; border-radius:10px;
+      padding:14px 16px; text-align:left;
+      display:flex; align-items:center; gap:10px;
+    }
+  }
+  @media (min-width:621px){
+    .mobile-list{display:none;}
+  }
+
+  /* --- Detail card --- */
+  .detail{
+    background:var(--paper-dim);
+    border-left:4px solid var(--accent-orange);
+    border-radius:4px;
+    padding:20px 22px;
+    min-height:150px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .detail .label{
+    font-family:var(--font-header);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--accent-orange);
+    font-weight:700;
+  }
+  .detail h2{
+    font-family:var(--font-header);
+    font-size:19px;
+    margin:0;
+    color:var(--text-navy);
+  }
+  .detail .row{font-size:14.5px; line-height:1.55; color:#26313a;}
+  .detail .row b{color:var(--text-navy);}
+  .detail .cite{
+    font-size:12.5px;
+    color:var(--slate);
+    font-style:italic;
+  }
+  .placeholder{
+    color:var(--slate);
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    text-align:center;
+  }
+
+  footer{
+    margin-top:32px;
+    padding-top:18px;
+    border-top:2px solid var(--line);
+    font-size:12.5px;
+    color:var(--slate);
+    line-height:1.6;
+  }
+  footer a{color:var(--accent-blue);}
+</style>
+</head>
+<body>
+<div class="ledger">
+  <header>
+    <p class="kicker">Multimodal Artifact · Reflective Diary</p>
+    <h1>The Assumption Ledger</h1>
+    <p class="byline">Meghan Gilligan · EDUC 5305G, Ontario Tech University · Extends "A1 Reflective Diary: Week 2"</p>
+  </header>
+
+  <p class="intro">My written reflection names four assumptions I carried about grades, effort, low scores, and AI. This concept map makes the reasoning behind each one visible: <strong>what I used to believe</strong>, <strong>the research that challenged it</strong>, and <strong>what I do differently now</strong>. I built the map's structure by talking it through with an AI tool first — asking it to help me see where my four assumptions actually connected, rather than treating them as four separate points. <button id="tourBtn" style="font:inherit;font-size:12.5px;background:none;border:1px solid var(--line);border-radius:20px;padding:3px 12px;color:var(--accent-blue);cursor:pointer;">▶ walk me through it</button></p>
+
+  <div class="map-wrap">
+    <svg class="connectors" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet">
+      <path id="p1" d="M 95 95 Q 250 180 250 250"/>
+      <path id="p2" d="M 405 95 Q 250 180 250 250"/>
+      <path id="p3" d="M 95 405 Q 250 320 250 250"/>
+      <path id="p4" d="M 405 405 Q 250 320 250 250"/>
+    </svg>
+    <div class="map-grid">
+      <div class="node n1" data-node="1">Grades =<br>my worth</div>
+      <div class="node n2" data-node="2">Effort =<br>visible persistence</div>
+      <div class="hub">What the research<br>(and AI)<br>helped me see</div>
+      <div class="node n3" data-node="3">A low score =<br>failure</div>
+      <div class="node n4" data-node="4">AI =<br>a shortcut</div>
+    </div>
+    <div class="mobile-list">
+      <div class="node" data-node="1">① Grades = my worth</div>
+      <div class="node" data-node="2">② Effort = visible persistence</div>
+      <div class="node" data-node="3">③ A low score = failure</div>
+      <div class="node" data-node="4">④ AI = a shortcut</div>
+    </div>
+  </div>
+
+  <div class="detail" id="detail">
+    <div class="placeholder">Click any assumption above to open the ledger entry.</div>
+  </div>
+
+  <footer>
+    Sources: Brookhart et al. (2016) · Brown (2022) · Harrison &amp; Vallin (2018) · Holthe &amp; Langvik (2017) · Ncube et al. (2026).
+    Built as a companion to the written reflection, using AI as a thinking partner to map connections rather than generate the reflection itself.
+  </footer>
+</div>
+
+<script>
+const data = {
+  1:{
+    label:"Assumption",
+    title:"Grades = my worth",
+    reality:"A century of grading research shows grades are a <b>multidimensional construct</b>, not a measure of innate intelligence (Brookhart et al., 2016).",
+    practice:"My lived answer: my grades have mostly tracked my daily capacity to focus — a distinction I didn't have language for until my ADHD diagnosis.",
+    cite:"Brookhart et al. (2016)"
+  },
+  2:{
+    label:"Assumption",
+    title:"Effort = visible persistence",
+    reality:"Teachers often grade visible work habits, while <b>executive effort and self-regulation</b> stay invisible and hard to measure (Brown, 2022; Holthe & Langvik, 2017).",
+    practice:"Being called \"lazy\" became a self-fulfilling prophecy — when the real story was undiagnosed executive dysfunction, not a lack of effort.",
+    cite:"Brown (2022); Holthe &amp; Langvik (2017)"
+  },
+  3:{
+    label:"Assumption",
+    title:"A low score = failure",
+    reality:"Anxiety made me distrust my own <b>declarative knowledge</b> on multiple-choice tests, even when I knew the material (Harrison &amp; Vallin, 2018).",
+    practice:"Now, a low score triggers a routine: review the assignment, my submission, and the rubric — then find the actual gap, not just the anxiety spike.",
+    cite:"Harrison &amp; Vallin (2018)"
+  },
+  4:{
+    label:"Assumption",
+    title:"AI = a shortcut",
+    reality:"Used well, AI functions as a <b>constructivist thinking partner</b> that scaffolds learning rather than replacing it (Brown, 2022; Ncube et al., 2026).",
+    practice:"My educational technology portfolio is the proof: AI helped me learn coding and web design I didn't already have — it extended my thinking, it didn't do it for me.",
+    cite:"Brown (2022); Ncube et al. (2026)"
+  }
+};
+
+const detail = document.getElementById('detail');
+const nodes = document.querySelectorAll('.node');
+const paths = { 1:document.getElementById('p1'), 2:document.getElementById('p2'), 3:document.getElementById('p3'), 4:document.getElementById('p4') };
+
+function showNode(id){
+  const d = data[id];
+  detail.innerHTML = `
+    <div class="label">${d.label}</div>
+    <h2>${d.title}</h2>
+    <div class="row"><b>Reality check —</b> ${d.reality}</div>
+    <div class="row"><b>Now what —</b> ${d.practice}</div>
+    <div class="cite">${d.cite}</div>
+  `;
+  document.querySelectorAll('.node').forEach(n=>n.classList.toggle('active', n.dataset.node===String(id)));
+  Object.entries(paths).forEach(([k,p])=>p.classList.toggle('active', k===String(id)));
+}
+
+nodes.forEach(n=>{
+  n.addEventListener('click', ()=>showNode(n.dataset.node));
+});
+
+let tourIndex = 0;
+document.getElementById('tourBtn').addEventListener('click', ()=>{
+  tourIndex = (tourIndex % 4) + 1;
+  showNode(tourIndex);
+  document.getElementById('detail').scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+</script>
+</body>
+</html>
