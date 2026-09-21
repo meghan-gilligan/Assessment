@@ -3,474 +3,361 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Control Ledger</title>
+<title>The Ledger Collection</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
-
-  :root {
-    --bg-ink: #1B1B18;
-    --paper: #FFFFFF;
-    --paper-dim: #F2F2F2;
-    --text: #003C71;
-    --accent-blue: #0077CA;
-    --accent-orange: #E75D2A;
-    --slate: #5B6770;
-    --line: #D8D8D8;
-    --dots-bg: #00283C;
-    --font-header: 'Ubuntu', -apple-system, sans-serif;
-    --font-body: 'ITC Franklin Gothic Std', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  :root{
+    --bg-ink:#1B1B18;
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F2;
+    --text-navy:#003C71;
+    --accent-blue:#0077CA;
+    --accent-orange:#E75D2A;
+    --slate:#5B6770;
+    --line:#D8D8D8;
+    --dots-bg:#00283C;
+    --font-header:'Ubuntu', -apple-system, sans-serif;
+    --font-body:'ITC Franklin Gothic Std','Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-ink);
+    background-image:radial-gradient(var(--dots-bg) 1px, transparent 1px);
+    background-size:18px 18px;
+    font-family:var(--font-body);
+    color:var(--text-navy);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .ledger{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:2px;
+    padding:44px 48px 36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  @media (max-width:640px){
+    .ledger{padding:32px 20px 28px;}
+  }
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:12px;
+  }
+  .kicker{
+    font-family:var(--font-header);
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:var(--font-header);
+    font-size:clamp(26px,4.5vw,36px);
+    margin:0 0 10px;
+    color:var(--text-navy);
+    line-height:1.15;
+  }
+  .byline{font-size:13px; color:var(--slate); margin:0;}
+  .intro{
+    font-size:15px;
+    line-height:1.65;
+    color:#26313a;
+    margin:22px 0 8px;
   }
 
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background: var(--bg-ink);
-    background-image: radial-gradient(circle at 20% 15%, #232019 0%, var(--bg-ink) 60%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    font-family: var(--font-body);
+  /* --- progress strip --- */
+  .progress{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:18px 0 8px;
+    flex-wrap:wrap;
+  }
+  .progress .pip{
+    width:10px; height:10px; border-radius:50%;
+    background:var(--line);
+  }
+  .progress .pip.done{background:var(--accent-blue);}
+  .progress .label{
+    font-family:var(--font-header);
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--slate);
+    font-weight:700;
+    margin-left:4px;
   }
 
-  .desk {
-    width: 100%;
-    max-width: 780px;
-    position: relative;
+  /* --- Trail --- */
+  .trail-wrap{
+    position:relative;
+    margin:20px auto 8px;
+  }
+  svg.trail{
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    z-index:0;
+  }
+  svg.trail path{
+    fill:none;
+    stroke:var(--line);
+    stroke-width:3;
+    stroke-dasharray:1 10;
+    stroke-linecap:round;
+  }
+  svg.trail path.walked{
+    stroke:var(--accent-blue);
+    stroke-dasharray:none;
   }
 
-  .ledger {
-    position: relative;
-    z-index: 1;
-    background: var(--paper);
-    padding: 44px 48px 36px;
-    border-radius: 2px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+  .stop{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:96px 1fr;
+    align-items:center;
+    gap:20px;
+    min-height:150px;
+  }
+  .stop.right{grid-template-columns:1fr 96px;}
+  .stop.right .stamp-col{order:2;}
+  .stop.right .card-col{order:1; text-align:right;}
+  .stop.right .card-col .meta{justify-content:flex-end;}
+
+  .stamp-col{display:flex; justify-content:center;}
+  .stamp{
+    width:84px; height:84px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    font-family:var(--font-header);
+    font-weight:700;
+    text-align:center;
+    box-shadow:0 0 0 5px var(--paper), 0 0 0 7px var(--line);
+    background:var(--paper-dim);
+    color:var(--slate);
+    border:2px dashed var(--line);
+  }
+  .stamp .wk{font-size:10px; letter-spacing:.08em; text-transform:uppercase; opacity:.8;}
+  .stamp .num{font-size:24px; line-height:1;}
+  .stop.done .stamp{
+    background:var(--text-navy);
+    color:var(--paper);
+    border:2px solid var(--text-navy);
+    box-shadow:0 0 0 5px var(--paper), 0 0 0 7px var(--accent-blue);
   }
 
-  .kicker {
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: var(--accent-orange);
-    letter-spacing: 0.02em;
-    margin: 0 0 6px;
+  .card-col a.card, .card-col .card{
+    display:block;
+    background:var(--paper-dim);
+    border-left:4px solid var(--line);
+    border-radius:4px;
+    padding:14px 18px;
+    text-decoration:none;
+    color:var(--text-navy);
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .stop.right .card-col a.card, .stop.right .card-col .card{border-left:none; border-right:4px solid var(--line);}
+  .stop.done .card-col a.card{
+    border-left-color:var(--accent-orange);
+    cursor:pointer;
+  }
+  .stop.right.done .card-col a.card{border-right-color:var(--accent-orange); border-left:none;}
+  .stop.done .card-col a.card:hover{transform:translateY(-2px); background:#eef3f7;}
+
+  .card-col .era{
+    font-family:var(--font-header);
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .stop:not(.done) .card-col .era{color:var(--slate);}
+  .card-col h2{
+    font-family:var(--font-header);
+    font-size:17px;
+    margin:0 0 6px;
+    line-height:1.25;
+  }
+  .card-col .meta{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    color:var(--slate);
+  }
+  .stop.done .card-col .meta{color:var(--accent-blue); font-weight:600;}
+
+  .break-row{
+    position:relative;
+    z-index:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:-6px 0 24px;
+  }
+  .break-pill{
+    font-family:var(--font-header);
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--slate);
+    background:var(--paper);
+    border:1px dashed var(--line);
+    border-radius:20px;
+    padding:5px 14px;
   }
 
-  h1 {
-    font-family: var(--font-header);
-    font-weight: 700;
-    font-size: 34px;
-    color: var(--text);
-    margin: 0 0 10px;
-    line-height: 1.15;
-  }
-
-  .lede {
-    font-family: var(--font-body);
-    font-size: 17px;
-    color: var(--text);
-    line-height: 1.5;
-    margin: 0 0 32px;
-  }
-
-  .stage-head {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 18px;
-  }
-
-  .stamp {
-    width: 56px;
-    height: 56px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    border: 2.5px solid var(--accent-orange);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--accent-orange);
-    font-family: var(--font-header);
-    font-weight: 700;
-    font-size: 12px;
-    text-align: center;
-    line-height: 1.1;
-    transform: rotate(-6deg);
-    transition: border-color 0.4s ease, color 0.4s ease;
-  }
-
-  .stage-titles { flex: 1; }
-
-  .era-name {
-    font-family: var(--font-header);
-    font-size: 21px;
-    font-weight: 700;
-    color: var(--text);
-    margin: 0;
-  }
-
-  .pop-label {
-    font-family: var(--font-body);
-    font-size: 13.5px;
-    color: var(--slate);
-    margin: 3px 0 0;
-  }
-
-  .stage-desc {
-    font-family: var(--font-body);
-    font-size: 15.5px;
-    line-height: 1.6;
-    color: var(--text);
-    margin: 0 0 22px;
-    min-height: 76px;
-  }
-
-  .figures-panel {
-    background: var(--dots-bg);
-    border-radius: 3px;
-    padding: 20px;
-    margin-bottom: 22px;
-    min-height: 110px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .figures-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-    max-width: 100%;
-  }
-
-  .fig {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--slate);
-    transition: background 0.25s ease, transform 0.25s ease;
-  }
-
-  .fig.large {
-    width: 20px;
-    height: 20px;
-  }
-
-  .fig.badge {
-    background: var(--accent-blue);
-  }
-
-  .fig.modern {
-    background: var(--accent-orange);
-  }
-
-  .gauges {
-    margin-bottom: 26px;
-  }
-
-  .gauge-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 10px;
-  }
-
-  .gauge-label {
-    width: 130px;
-    flex-shrink: 0;
-    font-family: var(--font-body);
-    font-size: 12.5px;
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  .gauge-track {
-    flex: 1;
-    height: 8px;
-    background: var(--paper-dim);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .gauge-fill {
-    height: 100%;
-    transition: width 0.5s ease;
-  }
-
-  .gauge-fill.personal { background: var(--accent-blue); }
-  .gauge-fill.scale { background: var(--accent-orange); }
-
-  .citation {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 13.5px;
-    color: var(--slate);
-    margin: 0 0 30px;
-  }
-
-  .slider-wrap {
-    border-top: 1px solid var(--line);
-    padding-top: 26px;
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    background: var(--slate);
-    border-radius: 2px;
-    margin: 0 0 12px;
-  }
-
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--accent-blue);
-    border: 2px solid var(--paper);
-    box-shadow: 0 0 0 1.5px var(--accent-orange);
-    cursor: pointer;
-    margin-top: -8px;
-  }
-
-  input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--accent-blue);
-    border: 2px solid var(--paper);
-    box-shadow: 0 0 0 1.5px var(--accent-orange);
-    cursor: pointer;
-  }
-
-  input[type="range"]::-webkit-slider-runnable-track {
-    height: 4px;
-    background: var(--slate);
-    border-radius: 2px;
-  }
-
-  .stop-labels {
-    position: relative;
-    height: 34px;
-    margin: 0 10px;
-    font-family: var(--font-body);
-    font-size: 12.5px;
-    color: var(--slate);
-    font-weight: 500;
-  }
-
-  .stop-labels span {
-    position: absolute;
-    top: 0;
-    transform: translateX(-50%);
-    width: 78px;
-    text-align: center;
-    font-size: 11.5px;
-    line-height: 1.3;
-  }
-
-  .stop-labels span:nth-child(1) { left: 0%; }
-  .stop-labels span:nth-child(2) { left: 25%; }
-  .stop-labels span:nth-child(3) { left: 50%; }
-  .stop-labels span:nth-child(4) { left: 75%; }
-  .stop-labels span:nth-child(5) { left: 100%; }
-
-  .stop-labels span.active {
-    color: var(--accent-orange);
-    font-weight: 700;
-  }
-
-  .footnote {
-    font-family: var(--font-body);
-    font-size: 12px;
-    color: var(--slate);
-    text-align: center;
-    margin-top: 22px;
-    line-height: 1.5;
-  }
-
-  @media (max-width: 600px) {
-    .ledger { padding: 30px 24px 26px; }
-    h1 { font-size: 27px; }
-    .stage-head { flex-wrap: wrap; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
+  footer{
+    margin-top:30px;
+    padding-top:18px;
+    border-top:2px solid var(--line);
+    font-size:12.5px;
+    color:var(--slate);
+    line-height:1.6;
   }
 </style>
 </head>
 <body>
+<div class="ledger">
+  <header>
+    <p class="kicker">A Reflective Diary Series</p>
+    <h1>The Ledger Collection</h1>
+    <p class="byline">Meghan Gilligan · EDUC 5305G: Alternative &amp; Inclusive Assessment · Ontario Tech University</p>
+  </header>
 
-<div class="desk">
-  <div class="ledger">
-    <p class="kicker">Multimodal Artifact, Reflective Diary: Week 1: Ancient to Industrial Era</p>
-    <h1>The Control Ledger</h1>
-    <p class="lede">Move through five moments in the history of assessment, from ancient scribes to imperial exams in the Han Dynasty, to Lancaster's classroom, today's classroom, reflecting on my own experience, and ending with a projection of how AI may reshape assessment in the classroom. Watch how personalization changes as the population that needs to be controlled grows.</p>
+  <p class="intro">Eight reflective diaries, eight stops on one winding argument about assessment — from its earliest recorded uses as a tool of control, through to the classroom I teach and learn in today. Each stop is a written reflection paired with a multimodal artifact. Follow the trail below; the coming soon sections will deploy as the semester unfolds.</p>
 
-    <div class="stage-head">
-      <div class="stamp" id="stamp">EST.</div>
-      <div class="stage-titles">
-        <p class="era-name" id="eraName"></p>
-        <p class="pop-label" id="popLabel"></p>
-      </div>
-    </div>
+  <div class="progress" id="progress"></div>
 
-    <p class="stage-desc" id="stageDesc"></p>
-
-    <div class="figures-panel">
-      <div class="figures-grid" id="figuresGrid"></div>
-    </div>
-
-    <div class="gauges">
-      <div class="gauge-row">
-        <span class="gauge-label">Personalization</span>
-        <div class="gauge-track"><div class="gauge-fill personal" id="gaugePersonal"></div></div>
-      </div>
-      <div class="gauge-row">
-        <span class="gauge-label">Scale of control</span>
-        <div class="gauge-track"><div class="gauge-fill scale" id="gaugeScale"></div></div>
-      </div>
-    </div>
-
-    <p class="citation" id="citation"></p>
-
-    <div class="slider-wrap">
-      <input type="range" id="stageSlider" min="0" max="4" step="1" value="0" aria-label="Move through history">
-      <div class="stop-labels">
-        <span id="label0">Nippur</span>
-        <span id="label1">Han Dynasty</span>
-        <span id="label2">Lancaster's Classroom</span>
-        <span id="label3">Today's Classroom</span>
-        <span id="label4">Future Classroom</span>
-      </div>
-    </div>
-
-    <p class="footnote">Built to accompany week one's reflective diary on assessment as a tool of compliance, sorting, and social control, from ancient scribes to a projected AI-mediated future.</p>
+  <div class="trail-wrap" id="trailWrap">
+    <svg class="trail" id="trailSvg" viewBox="0 0 700 1650" preserveAspectRatio="none"></svg>
+    <div id="stops"></div>
   </div>
+
+  <footer>
+    Built as a companion index to the individual weekly reflections and artifacts submitted for EDUC 5305G.
+  </footer>
 </div>
 
 <script>
-  const stages = [
-    {
-      era: "Old Babylonian Nippur",
-      pop: "One master, one apprentice",
-      desc: "A teacher's model text sits beside the student's copy on the same tablet. Correction is immediate and private, meant to teach rather than to rank.",
-      citation: "Beyer, 2021",
-      stampText: "EST.",
-      personal: 95,
-      scale: 8,
-      figureCount: 2,
-      figureSize: "large",
-      badges: 0,
-      highlightClass: "badge"
-    },
-    {
-      era: "Han Dynasty Imperial Examination",
-      pop: "A narrow class of elites",
-      desc: "Three days and two nights of testing decide who gains access to state power. Passing proves loyalty to the dynasty, not mastery of learning.",
-      citation: "Ko, 2017",
-      stampText: "PASS",
-      personal: 45,
-      scale: 55,
-      figureCount: 16,
-      figureSize: "medium",
-      badges: 0,
-      highlightClass: "badge"
-    },
-    {
-      era: "Lancaster's Monitorial Classroom",
-      pop: "Hundreds of students at once",
-      desc: "Students are ranked by proficiency and compete for badges and medals, a reward system that converts compliance into a currency; still traded today as grades.",
-      citation: "Hogan, 1989; Giroux & McLaren, 1986",
-      stampText: "RANK",
-      personal: 10,
-      scale: 96,
-      figureCount: 54,
-      figureSize: "small",
-      badges: 7,
-      highlightClass: "badge"
-    },
-    {
-      era: "Today's Classroom",
-      pop: "Mass enrollment, unevenly personalized",
-      desc: "Classrooms include both traditional and authentic assessments. We see traditional assessment methods that mirror those of the Han Dynasty, such as the memorization-and-recall philosophy exam I took in 2008. In contrast, we also see authentic assessments at some institutions, for example, this reflective diary. Standardized testing and grade point averages keep sorting at scale. Still, adaptive tools and authentic assessment now offer personalized feedback that more closely mirrors the corrections that masters gave apprentices in Old Babylonian Nippur.",
-      citation: "Sentürk & Baş, 2023",
-      stampText: "GPA",
-      personal: 30,
-      scale: 92,
-      figureCount: 58,
-      figureSize: "small",
-      badges: 8,
-      highlightClass: "modern"
-    },
-    {
-      era: "The AI-Mediated Classroom",
-      pop: "Every student, every keystroke",
-      desc: "With the widespread availability and implementation of Artificial Intelligence tools in education, adaptive systems could give personalized feedback to every student simultaneously. These systems can track individual keystrokes, flag deviations, and score efforts in real time. This more closely mimics individual corrections from masters to apprentices, one at a time, in Old Babylonian Nippur. For the first time, personalization and mass surveillance may no longer be a trade-off, which could make assessment a more complete form of compliance than in previous eras.",
-      citation: "Author's projection",
-      stampText: "NEXT",
-      personal: 68,
-      scale: 97,
-      figureCount: 60,
-      figureSize: "small",
-      badges: 15,
-      highlightClass: "modern",
-      badges2: 15,
-      highlightClass2: "badge"
-    }
-  ];
+const weeks = [
+  { n:1, era:"Ancient to Industrial Era", title:"The Control Ledger", url:"https://meghan-gilligan.github.io/Assessment/", done:true },
+  { n:2, era:"20th Century to Modern", title:"The Assumption Ledger", url:"https://meghan-gilligan.github.io/Assessment/Week2.html", done:true, breakAfter:true },
+  { n:4, era:"Summative & Authentic", title:null, url:null, done:false },
+  { n:5, era:"Assessment “of” Learning → “as” Learning", title:null, url:null, done:false, breakAfter:true },
+  { n:7, era:"Curriculum & Considerations", title:null, url:null, done:false },
+  { n:8, era:"Designing Assessments & Evaluations", title:null, url:null, done:false, breakAfter:true },
+  { n:10, era:"Grades & Motivation", title:null, url:null, done:false },
+  { n:11, era:"Educational Environment", title:null, url:null, done:false },
+];
+const breakCount = weeks.filter(w=>w.breakAfter).length;
 
-  const slider = document.getElementById('stageSlider');
-  const eraName = document.getElementById('eraName');
-  const popLabel = document.getElementById('popLabel');
-  const stageDesc = document.getElementById('stageDesc');
-  const citation = document.getElementById('citation');
-  const stamp = document.getElementById('stamp');
-  const gaugePersonal = document.getElementById('gaugePersonal');
-  const gaugeScale = document.getElementById('gaugeScale');
-  const figuresGrid = document.getElementById('figuresGrid');
-  const stopLabels = [0, 1, 2, 3, 4].map(i => document.getElementById('label' + i));
+const stopsEl = document.getElementById('stops');
+const progressEl = document.getElementById('progress');
+const rowH = 200;
+const breakH = 70;
+const svgH = weeks.length * rowH + breakCount * breakH + 50;
+document.getElementById('trailSvg').setAttribute('viewBox', `0 0 700 ${svgH}`);
+document.getElementById('trailWrap').style.minHeight = svgH + 'px';
 
-  function renderFigures(stage) {
-    figuresGrid.innerHTML = '';
-    const sizeClass = stage.figureSize === 'large' ? 'large' : '';
-    const highlightClass = stage.highlightClass || 'badge';
-    const highlightClass2 = stage.highlightClass2;
-    const badges2 = stage.badges2 || 0;
-    for (let i = 0; i < stage.figureCount; i++) {
-      const fig = document.createElement('div');
-      fig.className = 'fig ' + sizeClass;
-      if (i < stage.badges) {
-        fig.className += ' ' + highlightClass;
-      } else if (highlightClass2 && i < stage.badges + badges2) {
-        fig.className += ' ' + highlightClass2;
-      }
-      figuresGrid.appendChild(fig);
-    }
+weeks.forEach((w,i)=>{
+  const isRight = i % 2 === 1;
+  const stop = document.createElement('div');
+  stop.className = 'stop ' + (isRight ? 'right ' : '') + (w.done ? 'done' : '');
+  stop.style.marginBottom = '30px';
+
+  const cardTag = w.done ? 'a' : 'div';
+  const hrefAttr = w.done ? ` href="${w.url}" target="_blank" rel="noopener"` : '';
+
+  stop.innerHTML = `
+    <div class="stamp-col">
+      <div class="stamp">
+        <span class="wk">Week</span>
+        <span class="num">${w.n}</span>
+      </div>
+    </div>
+    <div class="card-col">
+      <${cardTag} class="card"${hrefAttr}>
+        <div class="era">${w.era}</div>
+        <h2>${w.title ? w.title : 'Reflective Diary &amp; Artifact'}</h2>
+        <div class="meta">${w.done ? '▸ Enter the reflection' : '• Coming soon'}</div>
+      </${cardTag}>
+    </div>
+  `;
+  stopsEl.appendChild(stop);
+
+  const pip = document.createElement('div');
+  pip.className = 'pip' + (w.done ? ' done' : '');
+  progressEl.appendChild(pip);
+
+  if(w.breakAfter){
+    const brk = document.createElement('div');
+    brk.className = 'break-row';
+    brk.innerHTML = `<span class="break-pill">✈ Consolidation Break</span>`;
+    stopsEl.appendChild(brk);
+  }
+});
+const plabel = document.createElement('span');
+plabel.className = 'label';
+plabel.textContent = `${weeks.filter(w=>w.done).length} of ${weeks.length} published`;
+progressEl.appendChild(plabel);
+
+// Draw winding path once layout is set
+function drawTrail(){
+  const svg = document.getElementById('trailSvg');
+  const stopEls = document.querySelectorAll('.stop');
+  const wrapRect = document.getElementById('trailWrap').getBoundingClientRect();
+  const vbW = 700, vbH = svgH;
+  const scaleY = vbH / wrapRect.height;
+
+  let pts = [];
+  stopEls.forEach((el, i)=>{
+    const stampEl = el.querySelector('.stamp');
+    const r = stampEl.getBoundingClientRect();
+    const x = (r.left + r.width/2 - wrapRect.left) * (vbW / wrapRect.width);
+    const y = (r.top + r.height/2 - wrapRect.top) * scaleY;
+    pts.push({x,y,done: weeks[i].done});
+  });
+
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for(let i=1;i<pts.length;i++){
+    const midY = (pts[i-1].y + pts[i].y)/2;
+    d += ` C ${pts[i-1].x} ${midY}, ${pts[i].x} ${midY}, ${pts[i].x} ${pts[i].y}`;
   }
 
-  function render(index) {
-    const s = stages[index];
-    eraName.textContent = s.era;
-    popLabel.textContent = s.pop;
-    stageDesc.textContent = s.desc;
-    citation.textContent = '\u2014 ' + s.citation;
-    stamp.textContent = s.stampText;
-    gaugePersonal.style.width = s.personal + '%';
-    gaugeScale.style.width = s.scale + '%';
-    renderFigures(s);
-    stopLabels.forEach((el, i) => el.classList.toggle('active', i === index));
-  }
+  svg.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
+  svg.innerHTML = '';
+  const full = document.createElementNS('http://www.w3.org/2000/svg','path');
+  full.setAttribute('d', d);
+  svg.appendChild(full);
 
-  slider.addEventListener('input', (e) => render(parseInt(e.target.value, 10)));
-  render(0);
+  // walked portion: from start through last done stop
+  let lastDoneIdx = -1;
+  weeks.forEach((w,i)=>{ if(w.done) lastDoneIdx = i; });
+  if(lastDoneIdx > 0){
+    let d2 = `M ${pts[0].x} ${pts[0].y}`;
+    for(let i=1;i<=lastDoneIdx;i++){
+      const midY = (pts[i-1].y + pts[i].y)/2;
+      d2 += ` C ${pts[i-1].x} ${midY}, ${pts[i].x} ${midY}, ${pts[i].x} ${pts[i].y}`;
+    }
+    const walked = document.createElementNS('http://www.w3.org/2000/svg','path');
+    walked.setAttribute('d', d2);
+    walked.setAttribute('class','walked');
+    svg.appendChild(walked);
+  }
+}
+
+window.addEventListener('load', drawTrail);
+window.addEventListener('resize', drawTrail);
 </script>
-
 </body>
 </html>
