@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pyramid Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
+  :root{
+    --bg-ink:#1B1B18;
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F2;
+    --text-navy:#003C71;
+    --accent-blue:#0077CA;
+    --accent-orange:#E75D2A;
+    --slate:#5B6770;
+    --line:#D8D8D8;
+    --dots-bg:#00283C;
+    --font-header:'Ubuntu', -apple-system, sans-serif;
+    --font-body:'ITC Franklin Gothic Std','Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-ink);
+    background-image:radial-gradient(var(--dots-bg) 1px, transparent 1px);
+    background-size:18px 18px;
+    font-family:var(--font-body);
+    color:var(--text-navy);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .ledger{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:2px;
+    padding:40px 32px 36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:28px;
+  }
+  .kicker{
+    font-family:var(--font-header);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:var(--font-header);
+    font-size:clamp(24px,4vw,34px);
+    margin:0 0 10px;
+    color:var(--text-navy);
+    line-height:1.15;
+  }
+  .intro{
+    font-size:15px;
+    line-height:1.65;
+    color:#26313a;
+    margin:0 0 30px;
+  }
+  .intro strong{color:var(--text-navy);}
+  .tour{
+    font:inherit;font-size:12.5px;background:none;
+    border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;color:var(--accent-blue);cursor:pointer;
+  }
+  .tour:hover{border-color:var(--accent-blue);}
+
+  /* --- Pyramid --- */
+  .pyramid-wrap{
+    display:grid;
+    grid-template-columns:1fr 150px;
+    gap:18px;
+    max-width:680px;
+    margin:0 auto 30px;
+    align-items:stretch;
+  }
+  .pyramid{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+  .tier{
+    position:relative;
+    height:74px;
+    border:none;
+    cursor:pointer;
+    background:var(--paper-dim);
+    color:var(--text-navy);
+    font-family:var(--font-header);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;
+    transition:background .2s ease, color .2s ease, transform .18s ease;
+    padding:0 12px;
+  }
+  .tier:hover{transform:translateY(-2px);}
+  .tier:focus-visible{outline:3px solid var(--accent-orange);outline-offset:3px;}
+  .tier .t-name{font-size:17px;font-weight:700;line-height:1.1;}
+  .tier .t-sub{font-family:var(--font-body);font-size:12px;color:var(--slate);margin-top:3px;transition:color .2s ease;}
+  .tier.active{background:var(--accent-blue);color:var(--paper);}
+  .tier.active .t-sub{color:#dcebf7;}
+  /* trapezoid widths: top (Does) narrowest */
+  .tier[data-level="4"]{width:36%; clip-path:polygon(22% 0,78% 0,100% 100%,0 100%);}
+  .tier[data-level="3"]{width:56%; clip-path:polygon(9% 0,91% 0,100% 100%,0 100%);}
+  .tier[data-level="2"]{width:76%; clip-path:polygon(6.5% 0,93.5% 0,100% 100%,0 100%);}
+  .tier[data-level="1"]{width:96%; clip-path:polygon(5% 0,95% 0,100% 100%,0 100%);}
+
+  .brackets{
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .bracket{
+    flex:1;
+    border-left:3px solid var(--line);
+    padding:6px 0 6px 12px;
+    display:flex;flex-direction:column;justify-content:center;
+    font-size:12.5px;line-height:1.35;color:var(--slate);
+    transition:border-color .2s ease;
+  }
+  .bracket b{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--text-navy);display:block;margin-bottom:3px;
+  }
+  .bracket.top.lit{border-color:var(--accent-orange);}
+  .bracket.bottom.lit{border-color:var(--accent-blue);}
+
+  /* --- Villarroel dimension tracker --- */
+  .dims{
+    max-width:680px;margin:0 auto 26px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    font-size:12.5px;color:var(--slate);
+  }
+  .dims .dims-label{font-family:var(--font-header);font-weight:700;color:var(--text-navy);margin-right:4px;}
+  .pill{
+    border:1.5px solid var(--line);border-radius:20px;padding:4px 12px;
+    font-family:var(--font-header);font-size:12px;font-weight:500;color:var(--slate);
+    transition:all .2s ease;
+  }
+  .pill.on{border-color:var(--accent-orange);background:var(--accent-orange);color:var(--paper);}
+
+  /* --- Detail card (ledger entry) --- */
+  .detail{
+    background:var(--paper-dim);
+    border-left:4px solid var(--accent-orange);
+    border-radius:4px;
+    padding:20px 22px;
+    min-height:150px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .entry-head{display:flex;align-items:center;gap:16px;}
+  .stamp{
+    width:58px;height:58px;flex-shrink:0;border-radius:50%;
+    border:2.5px solid var(--accent-orange);color:var(--accent-orange);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-header);font-weight:700;font-size:11px;
+    text-align:center;line-height:1.1;transform:rotate(-6deg);
+  }
+  .detail .label{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent-orange);font-weight:700;
+  }
+  .detail h2{font-family:var(--font-header);font-size:19px;margin:2px 0 0;color:var(--text-navy);}
+  .detail .row{font-size:14.5px;line-height:1.55;color:#26313a;}
+  .detail .row b{color:var(--text-navy);}
+  .posted{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;
+    padding:3px 9px;font-size:12.5px;color:var(--text-navy);
+  }
+  .t-ledger{
+    width:100%;border-collapse:collapse;background:var(--paper);
+    font-size:13.5px;line-height:1.5;color:#26313a;
+  }
+  .t-ledger th{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    text-align:left;padding:8px 12px;border-bottom:2px solid var(--line);width:50%;
+  }
+  .t-ledger th.dr{color:var(--accent-orange);}
+  .t-ledger th.cr{color:var(--accent-blue);}
+  .t-ledger td{vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  .t-ledger td + td, .t-ledger th + th{border-left:1px solid var(--line);}
+  .t-ledger ul{margin:0;padding-left:16px;}
+  .t-ledger li{margin-bottom:6px;}
+  .t-ledger li:last-child{margin-bottom:0;}
+  .flag{
+    background:var(--paper);border:1px dashed var(--accent-orange);border-radius:3px;
+    padding:10px 12px;font-size:13.5px;line-height:1.5;color:#26313a;
+  }
+  .flag b{color:var(--accent-orange);font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;}
+  .detail .cite{font-size:12.5px;color:var(--slate);font-style:italic;}
+  .placeholder{
+    color:var(--slate);font-size:14px;display:flex;align-items:center;justify-content:center;
+    min-height:110px;text-align:center;
+  }
+
+  footer{
+    margin-top:32px;padding-top:18px;border-top:2px solid var(--line);
+    font-size:12.5px;color:var(--slate);line-height:1.6;
+  }
+
+  @media (max-width:620px){
+    .ledger{padding:28px 18px 26px;}
+    .pyramid-wrap{grid-template-columns:1fr;}
+    .brackets{display:none;}
+    .tier{height:64px;}
+    .tier .t-name{font-size:15px;}
+    .tier .t-sub{font-size:11px;}
+    .tier[data-level="4"]{width:44%;}
+    .tier[data-level="3"]{width:64%;}
+    .tier[data-level="2"]{width:82%;}
+    .tier[data-level="1"]{width:100%;}
+    .t-ledger, .t-ledger tbody, .t-ledger tr, .t-ledger td, .t-ledger th{display:block;width:100%;}
+    .t-ledger thead{display:none;}
+    .t-ledger td + td{border-left:none;}
+    .t-ledger td::before{
+      content:attr(data-col);display:block;font-family:var(--font-header);font-size:11px;
+      letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:4px;
+    }
+    .t-ledger td.dr::before{color:var(--accent-orange);}
+    .t-ledger td.cr::before{color:var(--accent-blue);}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="ledger">
+  <header>
+    <p class="kicker">Multimodal Artifact, Reflective Diary: Week 4: Computer-Based, Authentic, and Peer Assessment</p>
+    <h1>The Pyramid Ledger</h1>
+  </header>
+
+  <p class="intro">Kibble (2017) uses <strong>Miller's Pyramid</strong> to show that written tests reach only the lower levels of competence, while authentic performance tasks reach the levels required in real-world settings. This ledger posts the assessments I have experienced, as a student and as an educator, to the level they actually reach. Each entry records <strong>what that assessment costs</strong> the learner, <strong>what it credits</strong> them, and which of Villarroel et al.'s (2018) three dimensions of authentic assessment it touches. <button class="tour" id="tourBtn">▶ Walk me up the pyramid</button></p>
+
+  <div class="pyramid-wrap">
+    <div class="pyramid" role="group" aria-label="Miller's Pyramid levels">
+      <button class="tier" data-level="4"><span class="t-name">Does</span><span class="t-sub">Real practice</span></button>
+      <button class="tier" data-level="3"><span class="t-name">Shows</span><span class="t-sub">Performance</span></button>
+      <button class="tier" data-level="2"><span class="t-name">Knows How</span><span class="t-sub">Applied understanding</span></button>
+      <button class="tier" data-level="1"><span class="t-name">Knows</span><span class="t-sub">Recall</span></button>
+    </div>
+    <div class="brackets" aria-hidden="true">
+      <div class="bracket top"><b>Authentic tasks</b>Performance assessments; where durable learning happens</div>
+      <div class="bracket bottom"><b>Written tests</b>Multiple-choice and short answer, on paper or on screen</div>
+    </div>
+  </div>
+
+  <div class="dims" aria-live="polite">
+    <span class="dims-label">Authentic dimensions reached:</span>
+    <span class="pill" data-dim="realism">Realism</span>
+    <span class="pill" data-dim="cognitive">Cognitive challenge</span>
+    <span class="pill" data-dim="evaluative">Evaluative judgement</span>
+  </div>
+
+  <div class="detail" id="detail" aria-live="polite">
+    <div class="placeholder">Click any level of the pyramid to open its ledger entry, starting from the base.</div>
+  </div>
+
+  <footer>
+    Sources: Kibble (2017) · Perry et al. (2022) · Villarroel et al. (2018).<br>
+    Built as a companion to my written reflection, with AI as a thinking partner to structure and build the page. The mapping of Villarroel et al.'s (2018) dimensions onto Miller's Pyramid is my own synthesis.
+  </footer>
+</div>
+
+<script>
+const data = {
+  1:{
+    label:"Level 1 · Knows",
+    title:"Recall on a written test",
+    stamp:"RECALL",
+    measures:"Whether I can recall facts. Multiple-choice tests sit at this base level of the pyramid (Kibble, 2017).",
+    posted:["LMS multiple-choice quizzes","True / false","Fill in the blank","Handwritten exams in my early schooling"],
+    debit:[
+      "Atomized, decontextualized knowledge leads to short-term memorization that quickly fades (Villarroel et al., 2018).",
+      "On paper, my handwriting was scored along with my knowledge. Teachers could not read my answers, and with undiagnosed ADHD I had no accommodations."
+    ],
+    credit:[
+      "Auto-scoring speeds up grading and gets students targeted feedback quickly (Kibble, 2017; Perry et al., 2022).",
+      "Keyboarding removes penalties for illegible writing (Perry et al., 2022)."
+    ],
+    flag:{title:"Audit flag: construct-irrelevant variance", text:"Handwriting legibility and processing constraints add measurement noise that distorts what a test says about learning (Kibble, 2017). My early grades recorded my penmanship, not only my knowledge."},
+    dims:[],
+    cite:"Kibble (2017); Perry et al. (2022); Villarroel et al. (2018)"
+  },
+  2:{
+    label:"Level 2 · Knows How",
+    title:"Explaining on a written test",
+    stamp:"APPLY",
+    measures:"Whether I can explain how knowledge is used. Written tests still stop here (Kibble, 2017).",
+    posted:["Short-answer questions I mark by hand","Computer-based exams I write as a student"],
+    debit:[
+      "In crowded post-secondary rooms, screens are visible in peripheral vision, and scrolling distracts others (Perry et al., 2022).",
+      "ESL students often need more time to read the material (Kibble, 2017)."
+    ],
+    credit:[
+      "Typing makes my answers polished and organized, and Ctrl+F lets me link back to an earlier question without rereading the test.",
+      "Students find computer-based tests easier to navigate and edit, and less fatiguing to read (Perry et al., 2022). My ESL students often do better on them."
+    ],
+    flag:{title:"Audit flag: unreconciled balance", text:"I once let students see auto-scored results before I had marked the short answers. Releasing incomplete data creates response-process validity issues and unnecessary distress (Kibble, 2017). Now I hide the grade until the whole test is reconciled."},
+    dims:[],
+    cite:"Kibble (2017); Perry et al. (2022)"
+  },
+  3:{
+    label:"Level 3 · Shows",
+    title:"Performing a realistic task",
+    stamp:"SHOW",
+    measures:"Whether I can demonstrate a skill in a realistic setting. Authentic performance assessment begins here (Kibble, 2017).",
+    posted:["Reflective diaries","Peer reviews on Kritik"],
+    debit:[
+      "Takes more time and effort than recall. I have to go back to prior experiences and connect them to theory and research."
+    ],
+    credit:[
+      "Tasks mirror workplace problems and require higher-order thinking (Villarroel et al., 2018).",
+      "Applying knowledge in authentic tasks creates durable learning that transfers to professional practice (Villarroel et al., 2018). Reflections let me build on prior knowledge and co-construct new knowledge."
+    ],
+    flag:null,
+    dims:["realism","cognitive"],
+    cite:"Kibble (2017); Villarroel et al. (2018)"
+  },
+  4:{
+    label:"Level 4 · Does",
+    title:"Judging quality in practice",
+    stamp:"DO",
+    measures:"Whether I do the work in real settings. This is the top of the pyramid (Kibble, 2017).",
+    posted:["Scoring peers' work","Giving feedback to my own students"],
+    debit:[
+      "I am harder on myself as a reviewer than as a writer. I take extra time to understand a peer's connections and reread their citations."
+    ],
+    credit:[
+      "Judging a peer's work builds evaluative judgement: tacit knowledge of quality that sharpens my own future work (Villarroel et al., 2018).",
+      "Peer assessment shifts ownership onto the learner and builds critical appraisal skills (Kibble, 2017)."
+    ],
+    flag:{title:"Double entry", text:"Every review is posted twice: a credit to my peer, who receives feedback, and a credit to me, as the reviewer who builds judgement. Giving feedback is not a cost to my learning; it pays me too."},
+    dims:["realism","cognitive","evaluative"],
+    cite:"Kibble (2017); Villarroel et al. (2018)"
+  }
+};
+
+const detail = document.getElementById('detail');
+const tiers = document.querySelectorAll('.tier');
+const pills = document.querySelectorAll('.pill');
+const topBracket = document.querySelector('.bracket.top');
+const bottomBracket = document.querySelector('.bracket.bottom');
+
+function list(items){ return '<ul>' + items.map(i=>`<li>${i}</li>`).join('') + '</ul>'; }
+
+function showLevel(id){
+  const d = data[id];
+  detail.innerHTML = `
+    <div class="entry-head">
+      <div class="stamp">${d.stamp}</div>
+      <div>
+        <div class="label">${d.label}</div>
+        <h2>${d.title}</h2>
+      </div>
+    </div>
+    <div class="row"><b>What it measures —</b> ${d.measures}</div>
+    <div class="row"><b>Posted to this level —</b></div>
+    <div class="posted">${d.posted.map(p=>`<span class="chip">${p}</span>`).join('')}</div>
+    <table class="t-ledger">
+      <thead><tr><th class="dr">Debit · what it costs the learner</th><th class="cr">Credit · what it gives the learner</th></tr></thead>
+      <tbody><tr>
+        <td class="dr" data-col="Debit · what it costs the learner">${list(d.debit)}</td>
+        <td class="cr" data-col="Credit · what it gives the learner">${list(d.credit)}</td>
+      </tr></tbody>
+    </table>
+    ${d.flag ? `<div class="flag"><b>${d.flag.title}</b>${d.flag.text}</div>` : ''}
+    <div class="cite">${d.cite}</div>
+  `;
+  tiers.forEach(t=>{
+    const on = t.dataset.level===String(id);
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-pressed', on);
+  });
+  pills.forEach(p=>p.classList.toggle('on', d.dims.includes(p.dataset.dim)));
+  topBracket.classList.toggle('lit', id>=3);
+  bottomBracket.classList.toggle('lit', id<=2);
+}
+
+tiers.forEach(t=>t.addEventListener('click', ()=>showLevel(parseInt(t.dataset.level,10))));
+
+let tourIndex = 0;
+document.getElementById('tourBtn').addEventListener('click', ()=>{
+  tourIndex = (tourIndex % 4) + 1;
+  showLevel(tourIndex);
+  detail.scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+</script>
+</body>
+</html>
