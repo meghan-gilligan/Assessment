@@ -64,7 +64,10 @@
     line-height:1.65;
     color:#26313a;
     margin:0 0 30px;
+    text-align:justify;
+    hyphens:auto;
   }
+  .intro .tour{display:block;margin-top:14px;}
   .intro strong{color:var(--text-navy);}
   .tour{
     font:inherit;font-size:12.5px;background:none;
@@ -209,6 +212,7 @@
 
   @media (max-width:620px){
     .ledger{padding:28px 18px 26px;}
+    .intro{text-align:left;}
     .entries{grid-template-columns:1fr;}
     .station .s-name{font-size:13px;}
     .station .s-sub{font-size:11px;}
@@ -269,7 +273,7 @@
   <div class="dims" aria-live="polite">
     <span class="dims-label">What I practised:</span>
     <span class="pill" data-dim="monitor">Self-monitoring</span>
-    <span class="pill" data-dim="feedback">Using feedback</span>
+    <span class="pill" data-dim="feedback">Applying feedback</span>
     <span class="pill" data-dim="judge">Evaluative judgement</span>
   </div>
 
