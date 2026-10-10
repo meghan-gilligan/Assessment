@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pen Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
+  :root{
+    --bg-ink:#1B1B18;
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F2;
+    --text-navy:#003C71;
+    --accent-blue:#0077CA;
+    --accent-orange:#E75D2A;
+    --slate:#5B6770;
+    --line:#D8D8D8;
+    --dots-bg:#00283C;
+    --font-header:'Ubuntu', -apple-system, sans-serif;
+    --font-body:'ITC Franklin Gothic Std','Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-ink);
+    background-image:radial-gradient(var(--dots-bg) 1px, transparent 1px);
+    background-size:18px 18px;
+    font-family:var(--font-body);
+    color:var(--text-navy);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .ledger{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:2px;
+    padding:40px 32px 36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:28px;
+  }
+  .kicker{
+    font-family:var(--font-header);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:var(--font-header);
+    font-size:clamp(24px,4vw,34px);
+    margin:0 0 10px;
+    color:var(--text-navy);
+    line-height:1.15;
+  }
+  .intro{
+    font-size:15px;
+    line-height:1.65;
+    color:#26313a;
+    margin:0 0 30px;
+  }
+  .intro strong{color:var(--text-navy);}
+  .tour{
+    font:inherit;font-size:12.5px;background:none;
+    border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;color:var(--accent-blue);cursor:pointer;
+  }
+  .tour:hover{border-color:var(--accent-blue);}
+
+  /* --- Pen track: who holds the pen? --- */
+  .pen-wrap{max-width:680px;margin:0 auto 28px;}
+  .pen-ends{
+    display:flex;justify-content:space-between;
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:700;margin-bottom:10px;
+  }
+  .pen-ends .edu{color:var(--accent-blue);}
+  .pen-ends .lrn{color:var(--accent-orange);}
+  .track{
+    position:relative;height:56px;margin:0 22px;
+  }
+  .track .rail{
+    position:absolute;left:0;right:0;top:38px;height:4px;border-radius:2px;
+    background:linear-gradient(90deg,var(--accent-blue),var(--slate) 50%,var(--accent-orange));
+  }
+  .track .dot{
+    position:absolute;top:33px;width:14px;height:14px;border-radius:50%;
+    background:var(--paper);border:3px solid var(--slate);transform:translateX(-50%);
+  }
+  .pen{
+    position:absolute;top:0;left:0;transform:translateX(-50%);
+    transition:left .45s ease, opacity .3s ease;opacity:0;
+  }
+  .pen.show{opacity:1;}
+  .pen svg{display:block;}
+  .stations{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;
+  }
+  .station{
+    text-align:center;padding:10px 8px;border-radius:3px;
+    background:var(--paper-dim);border-top:3px solid var(--line);
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .station .s-name{font-family:var(--font-header);font-weight:700;font-size:15px;color:var(--text-navy);}
+  .station .s-sub{font-size:12px;color:var(--slate);margin-top:3px;line-height:1.35;}
+  .station.lit{background:var(--paper);border-top-color:var(--accent-orange);}
+
+  /* --- Entry buttons --- */
+  .entries-label{
+    max-width:680px;margin:0 auto 10px;
+    font-family:var(--font-header);font-weight:700;font-size:12.5px;color:var(--text-navy);
+  }
+  .entries{
+    max-width:680px;margin:0 auto 26px;
+    display:grid;grid-template-columns:repeat(2,1fr);gap:8px;
+  }
+  .entry-btn{
+    font:inherit;text-align:left;cursor:pointer;
+    background:var(--paper-dim);border:1.5px solid var(--line);border-radius:3px;
+    padding:10px 12px;color:var(--text-navy);
+    transition:all .2s ease;
+  }
+  .entry-btn:hover{transform:translateY(-2px);border-color:var(--accent-blue);}
+  .entry-btn:focus-visible{outline:3px solid var(--accent-orange);outline-offset:2px;}
+  .entry-btn .e-year{font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);font-weight:700;}
+  .entry-btn .e-name{font-family:var(--font-header);font-size:15px;font-weight:700;margin-top:2px;}
+  .entry-btn.active{background:var(--accent-blue);border-color:var(--accent-blue);color:var(--paper);}
+  .entry-btn.active .e-year{color:#dcebf7;}
+
+  /* --- Practice tracker --- */
+  .dims{
+    max-width:680px;margin:0 auto 26px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    font-size:12.5px;color:var(--slate);
+  }
+  .dims .dims-label{font-family:var(--font-header);font-weight:700;color:var(--text-navy);margin-right:4px;}
+  .pill{
+    border:1.5px solid var(--line);border-radius:20px;padding:4px 12px;
+    font-family:var(--font-header);font-size:12px;font-weight:500;color:var(--slate);
+    transition:all .2s ease;
+  }
+  .pill.on{border-color:var(--accent-orange);background:var(--accent-orange);color:var(--paper);}
+
+  /* --- Detail card (ledger entry) --- */
+  .detail{
+    background:var(--paper-dim);
+    border-left:4px solid var(--accent-orange);
+    border-radius:4px;
+    padding:20px 22px;
+    min-height:150px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .entry-head{display:flex;align-items:center;gap:16px;}
+  .stamp{
+    width:58px;height:58px;flex-shrink:0;border-radius:50%;
+    border:2.5px solid var(--accent-orange);color:var(--accent-orange);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-header);font-weight:700;font-size:11px;
+    text-align:center;line-height:1.1;transform:rotate(-6deg);
+  }
+  .detail .label{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent-orange);font-weight:700;
+  }
+  .detail h2{font-family:var(--font-header);font-size:19px;margin:2px 0 0;color:var(--text-navy);}
+  .detail .row{font-size:14.5px;line-height:1.55;color:#26313a;}
+  .detail .row b{color:var(--text-navy);}
+  .posted{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;
+    padding:3px 9px;font-size:12.5px;color:var(--text-navy);
+  }
+  .t-ledger{
+    width:100%;border-collapse:collapse;background:var(--paper);
+    font-size:13.5px;line-height:1.5;color:#26313a;
+  }
+  .t-ledger th{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    text-align:left;padding:8px 12px;border-bottom:2px solid var(--line);width:50%;
+  }
+  .t-ledger th.dr{color:var(--accent-orange);}
+  .t-ledger th.cr{color:var(--accent-blue);}
+  .t-ledger td{vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  .t-ledger td + td, .t-ledger th + th{border-left:1px solid var(--line);}
+  .t-ledger ul{margin:0;padding-left:16px;}
+  .t-ledger li{margin-bottom:6px;}
+  .t-ledger li:last-child{margin-bottom:0;}
+  .flag{
+    background:var(--paper);border:1px dashed var(--accent-orange);border-radius:3px;
+    padding:10px 12px;font-size:13.5px;line-height:1.5;color:#26313a;
+  }
+  .flag b{color:var(--accent-orange);font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;}
+  .detail .cite{font-size:12.5px;color:var(--slate);font-style:italic;}
+  .placeholder{
+    color:var(--slate);font-size:14px;display:flex;align-items:center;justify-content:center;
+    min-height:110px;text-align:center;
+  }
+
+  footer{
+    margin-top:32px;padding-top:18px;border-top:2px solid var(--line);
+    font-size:12.5px;color:var(--slate);line-height:1.6;
+  }
+
+  @media (max-width:620px){
+    .ledger{padding:28px 18px 26px;}
+    .entries{grid-template-columns:1fr;}
+    .station .s-name{font-size:13px;}
+    .station .s-sub{font-size:11px;}
+    .t-ledger, .t-ledger tbody, .t-ledger tr, .t-ledger td, .t-ledger th{display:block;width:100%;}
+    .t-ledger thead{display:none;}
+    .t-ledger td + td{border-left:none;}
+    .t-ledger td::before{
+      content:attr(data-col);display:block;font-family:var(--font-header);font-size:11px;
+      letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:4px;
+    }
+    .t-ledger td.dr::before{color:var(--accent-orange);}
+    .t-ledger td.cr::before{color:var(--accent-blue);}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="ledger">
+  <header>
+    <p class="kicker">Multimodal Artifact, Reflective Diary: Week 5: Assessment of, for, and as Learning</p>
+    <h1>The Pen Ledger</h1>
+  </header>
+
+  <p class="intro">My earlier ledgers asked what assessment <strong>costs</strong> and <strong>credits</strong> learners. This one asks <strong>who holds the pen</strong>. In assessment <em>of</em> learning, the educator records the entry to certify achievement. In assessment <em>for</em> learning, the educator writes entries the learner can use to improve. In assessment <em>as</em> learning, the learner keeps the books, monitoring, judging, and adjusting their own work (Dixson &amp; Worrell, 2016; Schellekens et al., 2021; Yan &amp; Boud, 2022). Open each entry to see where the pen sat. <button class="tour" id="tourBtn">▶ Pass me the pen</button></p>
+
+  <div class="pen-wrap">
+    <div class="pen-ends" aria-hidden="true"><span class="edu">Educator holds the pen</span><span class="lrn">Learner holds the pen</span></div>
+    <div class="track" aria-hidden="true">
+      <div class="rail"></div>
+      <div class="dot" style="left:0%"></div>
+      <div class="dot" style="left:50%"></div>
+      <div class="dot" style="left:100%"></div>
+      <div class="pen" id="pen">
+        <svg width="30" height="32" viewBox="0 0 30 32" role="img" aria-label="Pen">
+          <g transform="rotate(35 15 16)">
+            <rect x="11" y="0" width="8" height="20" rx="1.5" fill="#003C71"/>
+            <rect x="11" y="4" width="8" height="2.5" fill="#E75D2A"/>
+            <polygon points="11,20 19,20 15,30" fill="#0077CA"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="stations">
+      <div class="station" data-st="of"><div class="s-name">Of learning</div><div class="s-sub">Certifies achievement at the end</div></div>
+      <div class="station" data-st="for"><div class="s-name">For learning</div><div class="s-sub">Feedback that guides improvement</div></div>
+      <div class="station" data-st="as"><div class="s-name">As learning</div><div class="s-sub">The learner monitors and adjusts</div></div>
+    </div>
+  </div>
+
+  <div class="entries-label">Ledger entries</div>
+  <div class="entries" role="group" aria-label="Ledger entries">
+    <button class="entry-btn" data-id="grade"><div class="e-year">Weeks 1–5 · Alternative &amp; Inclusive Assessment</div><div class="e-name">Receiving grades for these reflections</div></button>
+    <button class="entry-btn" data-id="revise"><div class="e-year">Week 1 · Alternative &amp; Inclusive Assessment</div><div class="e-name">Rewriting my first reflection</div></button>
+    <button class="entry-btn" data-id="questions"><div class="e-year">Principles of Learning</div><div class="e-name">Writing my own questions</div></button>
+    <button class="entry-btn" data-id="code"><div class="e-year">Weeks 1–5</div><div class="e-name">Coding these artifacts with AI</div></button>
+  </div>
+
+  <div class="dims" aria-live="polite">
+    <span class="dims-label">What I practised:</span>
+    <span class="pill" data-dim="monitor">Self-monitoring</span>
+    <span class="pill" data-dim="feedback">Using feedback</span>
+    <span class="pill" data-dim="judge">Evaluative judgement</span>
+  </div>
+
+  <div class="detail" id="detail" aria-live="polite">
+    <div class="placeholder">Open any entry to see who held the pen, starting with my grades.</div>
+  </div>
+
+  <footer>
+    Sources: Beyer (2021) · Dixson &amp; Worrell (2016) · Schellekens et al. (2021) · Tai et al. (2018) · Yan &amp; Boud (2022).<br>
+    Built as a companion to my written reflection, with AI as a thinking partner to structure and build the page. Placing each experience on the pen track is my own synthesis.
+  </footer>
+</div>
+
+<script>
+const stations = {of:0, for:50, as:100};
+const order = ["grade","revise","questions","code"];
+const data = {
+  grade:{
+    station:"of",
+    label:"Assessment of learning · The grader's pen",
+    title:"Receiving a score for each reflection",
+    stamp:"/ 28",
+    pen:"The grader. A peer or instructor scores my submission against the rubric after I submit it.",
+    posted:["Weekly reflective diaries","Rubric scores out of 28","Kritik peer evaluations"],
+    debit:[
+      "A number arrives after the work is finished, when I can no longer change it.",
+      "My first reaction is still to read a low score as a verdict on me, not on that piece of work."
+    ],
+    credit:[
+      "Summative assessment certifies what I achieved against a shared standard (Dixson &amp; Worrell, 2016).",
+      "A score tells me where I stand on each rubric criterion, which points me to what to look at next."
+    ],
+    flag:{title:"Closed entry", text:"A grade on its own tells me how I did, not what to do next. When I review the rubric, my submission, and the feedback behind a score, I move the pen toward my own end of the track."},
+    dims:[],
+    cite:"Dixson & Worrell (2016); Schellekens et al. (2021)"
+  },
+  revise:{
+    station:"for",
+    label:"Assessment for learning · Shared pen",
+    title:"Rewriting my first reflection after feedback",
+    stamp:"DRAFT 2",
+    pen:"Shared. My peer learning group wrote the notes; I read them and rewrote the work.",
+    posted:["Week 1 reflective diary","Peer learning group","Peer feedback on my PoL consolidation","My feedback document"],
+    debit:[
+      "Admitting my first draft read like a historical review, not a reflection, and starting again.",
+      "Rewriting took time I had planned to spend elsewhere."
+    ],
+    credit:[
+      "The feedback was low-stakes and arrived while I could still act on it, which is the purpose of formative assessment (Dixson &amp; Worrell, 2016).",
+      "A peer later named an assumption in my writing, and I reframed it. Judging quality against standards builds evaluative judgement (Tai et al., 2018)."
+    ],
+    flag:{title:"Open entry", text:"No grade was attached, yet this feedback changed my work more than a mark would have. A grade closes an entry; feedback keeps it open. I now record feedback I want to apply, and practices I want to mirror for peers, so each comment carries into the next task."},
+    dims:["feedback","judge"],
+    cite:"Dixson & Worrell (2016); Tai et al. (2018)"
+  },
+  questions:{
+    station:"as",
+    label:"Assessment as learning · My pen",
+    title:"Writing my own practice questions",
+    stamp:"MY Q",
+    pen:"Me. We answered a guiding question on exercise, sleep, and learning, then wrote our own.",
+    posted:["Principles of Learning class","Sleep and learning","ADHD and sleep","Peers' questions on women's health"],
+    debit:[
+      "Writing a question is harder than answering one. I had to decide what mattered before I could ask about it.",
+      "The topic was personal. I am in a difficult bout of insomnia."
+    ],
+    credit:[
+      "A peer group's questions on sleep and women's health prompted my own question about ADHD and sleep, and I searched the readings for answers.",
+      "I left more informed, connected, and in charge of my learning. The act of assessing became the learning (Yan &amp; Boud, 2022)."
+    ],
+    flag:{title:"Double entry", text:"Practice questions credit both columns. They prepare me for recall exams, and they make me decide what is worth knowing. Memorization does not have to be the opposite of understanding when I write the questions."},
+    dims:["monitor","judge"],
+    cite:"Schellekens et al. (2021); Yan & Boud (2022)"
+  },
+  code:{
+    station:"as",
+    label:"Assessment as learning · My pen, with an advisor",
+    title:"Coding these artifacts with AI",
+    stamp:"DEBUG",
+    pen:"Me, with AI as an advisor. I decide what to ask and whether the answer is right.",
+    posted:["The Control Ledger","The Assumption Ledger","The Pyramid Ledger","This page"],
+    debit:[
+      "AI support could become another way of waiting to be told what to do.",
+      "Every fix I accept without understanding it is a decision I have handed away."
+    ],
+    credit:[
+      "When code breaks, I see it right away, investigate the cause, and ask for targeted help. Like Nippur's scribes copying a model beside their own work, correction is immediate and personal (Beyer, 2021).",
+      "Small, visible steps help me stay focused and catch problems before the deadline, which matters to me with ADHD."
+    ],
+    flag:{title:"Audit flag: who signs the entry?", text:"Seeking help counts as assessment as learning only when I judge the response and keep responsibility for my choices (Yan &amp; Boud, 2022). If AI holds the pen, this entry slides back toward the educator's end of the track."},
+    dims:["monitor","feedback","judge"],
+    cite:"Beyer (2021); Yan & Boud (2022)"
+  }
+};
+
+const detail = document.getElementById('detail');
+const btns = document.querySelectorAll('.entry-btn');
+const pills = document.querySelectorAll('.pill');
+const stationEls = document.querySelectorAll('.station');
+const pen = document.getElementById('pen');
+
+function list(items){ return '<ul>' + items.map(i=>`<li>${i}</li>`).join('') + '</ul>'; }
+
+function showEntry(id){
+  const d = data[id];
+  detail.innerHTML = `
+    <div class="entry-head">
+      <div class="stamp">${d.stamp}</div>
+      <div>
+        <div class="label">${d.label}</div>
+        <h2>${d.title}</h2>
+      </div>
+    </div>
+    <div class="row"><b>Who held the pen —</b> ${d.pen}</div>
+    <div class="row"><b>Posted to this entry —</b></div>
+    <div class="posted">${d.posted.map(p=>`<span class="chip">${p}</span>`).join('')}</div>
+    <table class="t-ledger">
+      <thead><tr><th class="dr">Debit · what it cost me</th><th class="cr">Credit · what it gave me</th></tr></thead>
+      <tbody><tr>
+        <td class="dr" data-col="Debit · what it cost me">${list(d.debit)}</td>
+        <td class="cr" data-col="Credit · what it gave me">${list(d.credit)}</td>
+      </tr></tbody>
+    </table>
+    ${d.flag ? `<div class="flag"><b>${d.flag.title}</b>${d.flag.text}</div>` : ''}
+    <div class="cite">${d.cite}</div>
+  `;
+  btns.forEach(b=>{
+    const on = b.dataset.id===id;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on);
+  });
+  pills.forEach(p=>p.classList.toggle('on', d.dims.includes(p.dataset.dim)));
+  stationEls.forEach(s=>s.classList.toggle('lit', s.dataset.st===d.station));
+  pen.style.left = stations[d.station] + '%';
+  pen.classList.add('show');
+}
+
+btns.forEach(b=>b.addEventListener('click', ()=>showEntry(b.dataset.id)));
+
+let tourIndex = -1;
+document.getElementById('tourBtn').addEventListener('click', ()=>{
+  tourIndex = (tourIndex + 1) % order.length;
+  showEntry(order[tourIndex]);
+  detail.scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+</script>
+</body>
+</html>
