@@ -264,10 +264,11 @@
 
   <div class="entries-label">Ledger entries</div>
   <div class="entries" role="group" aria-label="Ledger entries">
-    <button class="entry-btn" data-id="grade"><div class="e-year">Weeks 1–5 · Alternative &amp; Inclusive Assessment</div><div class="e-name">Receiving grades for these reflections</div></button>
-    <button class="entry-btn" data-id="revise"><div class="e-year">Week 1 · Alternative &amp; Inclusive Assessment</div><div class="e-name">Rewriting my first reflection</div></button>
-    <button class="entry-btn" data-id="questions"><div class="e-year">Principles of Learning</div><div class="e-name">Writing my own questions</div></button>
-    <button class="entry-btn" data-id="code"><div class="e-year">Weeks 1–5</div><div class="e-name">Coding these artifacts with AI</div></button>
+    <button class="entry-btn" aria-pressed="false" data-id="grade"><div class="e-year">Weeks 1–5 · Alternative &amp; Inclusive Assessment</div><div class="e-name">Receiving grades for these reflections</div></button>
+    <button class="entry-btn" aria-pressed="false" data-id="peer"><div class="e-year">Principles of Learning</div><div class="e-name">Applying a peer's feedback</div></button>
+    <button class="entry-btn" aria-pressed="false" data-id="revise"><div class="e-year">Week 1 · Alternative &amp; Inclusive Assessment</div><div class="e-name">Rewriting my first reflection</div></button>
+    <button class="entry-btn" aria-pressed="false" data-id="questions"><div class="e-year">Principles of Learning</div><div class="e-name">Writing my own questions</div></button>
+    <button class="entry-btn" aria-pressed="false" data-id="code"><div class="e-year">Weeks 1–5</div><div class="e-name">Coding these artifacts with AI</div></button>
   </div>
 
   <div class="dims" aria-live="polite">
@@ -289,7 +290,7 @@
 
 <script>
 const stations = {of:0, for:50, as:100};
-const order = ["grade","revise","questions","code"];
+const order = ["grade","peer","revise","questions","code"];
 const data = {
   grade:{
     station:"of",
@@ -310,24 +311,43 @@ const data = {
     dims:[],
     cite:"Dixson & Worrell (2016); Schellekens et al. (2021)"
   },
-  revise:{
+  peer:{
     station:"for",
     label:"Assessment for learning · Shared pen",
-    title:"Rewriting my first reflection after feedback",
+    title:"Applying a peer's feedback",
+    stamp:"NOTED",
+    pen:"Shared. A peer wrote the comment; I decided how to reframe my thinking.",
+    posted:["Peer feedback on my PoL consolidation","My feedback document"],
+    debit:[
+      "Seeing an assumption I had missed, and how it had shaped my interpretation of an event.",
+      "The comment arrived after I submitted, so I could only carry it into the next task."
+    ],
+    credit:[
+      "Feedback that guides my next step, rather than certifying the last one, serves the formative purpose of assessment (Dixson &amp; Worrell, 2016).",
+      "Weighing a peer's comment against my own work builds evaluative judgement, the capability to make decisions about the quality of my own and others' work (Tai et al., 2018)."
+    ],
+    flag:{title:"Open entry", text:"A grade closes an entry; feedback keeps it open. I now record feedback I want to apply, and practices I want to mirror for peers, so each comment carries into the next task."},
+    dims:["feedback","judge"],
+    cite:"Dixson & Worrell (2016); Tai et al. (2018)"
+  },
+  revise:{
+    station:"as",
+    label:"Assessment as learning · My pen",
+    title:"Rewriting my first reflection",
     stamp:"DRAFT 2",
-    pen:"Shared. My peer learning group wrote the notes; I read them and rewrote the work.",
-    posted:["Week 1 reflective diary","Peer learning group","Peer feedback on my PoL consolidation","My feedback document"],
+    pen:"Me. I reread my draft, judged it against the instructions and rubric, and rewrote it.",
+    posted:["Week 1 reflective diary","Assignment instructions","Rubric"],
     debit:[
       "Admitting my first draft read like a historical review, not a reflection, and starting again.",
       "Rewriting took time I had planned to spend elsewhere."
     ],
     credit:[
-      "The feedback was low-stakes and arrived while I could still act on it, which is the purpose of formative assessment (Dixson &amp; Worrell, 2016).",
-      "A peer later named an assumption in my writing, and I reframed it. Judging quality against standards builds evaluative judgement (Tai et al., 2018)."
+      "Monitoring my work, judging it against standards, and adjusting my approach is assessment as learning (Schellekens et al., 2021; Yan &amp; Boud, 2022).",
+      "The first iteration was low-stakes and assessed mainly on completion, so I could act on my own judgement without risking my grade."
     ],
-    flag:{title:"Open entry", text:"No grade was attached, yet this feedback changed my work more than a mark would have. A grade closes an entry; feedback keeps it open. I now record feedback I want to apply, and practices I want to mirror for peers, so each comment carries into the next task."},
-    dims:["feedback","judge"],
-    cite:"Dixson & Worrell (2016); Tai et al. (2018)"
+    flag:{title:"Self-audit", text:"No grade was attached, yet my own judgement changed the work more than a mark would have. I did not wait for an educator's entry before revising; I kept the books myself."},
+    dims:["monitor","judge"],
+    cite:"Schellekens et al. (2021); Yan & Boud (2022)"
   },
   questions:{
     station:"as",
@@ -360,7 +380,7 @@ const data = {
       "Every fix I accept without understanding it is a decision I have handed away."
     ],
     credit:[
-      "When code breaks, I see it right away, investigate the cause, and ask for targeted help. Like Nippur's scribes copying a model beside their own work, correction is immediate and personal (Yan &amp; Boud, 2022).",
+      "When code breaks, I see it right away, investigate the cause, and ask for targeted help, so correction is immediate and personal.",
       "Small, visible steps help me stay focused and catch problems before the deadline, which matters to me with ADHD."
     ],
     flag:{title:"Audit flag: who signs the entry?", text:"Seeking help counts as assessment as learning only when I judge the response and keep responsibility for my choices (Yan &amp; Boud, 2022). If AI holds the pen, this entry slides back toward the educator's end of the track."},
