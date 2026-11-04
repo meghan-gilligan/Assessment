@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Source Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
+  :root{
+    --bg-ink:#1B1B18;
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F2;
+    --text-navy:#003C71;
+    --accent-blue:#0077CA;
+    --accent-orange:#E75D2A;
+    --slate:#5B6770;
+    --line:#D8D8D8;
+    --dots-bg:#00283C;
+    --body-text:#26313a;
+    --font-header:'Ubuntu', -apple-system, sans-serif;
+    --font-body:'ITC Franklin Gothic Std','Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-ink);
+    background-image:radial-gradient(var(--dots-bg) 1px, transparent 1px);
+    background-size:18px 18px;
+    font-family:var(--font-body);
+    color:var(--text-navy);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .ledger{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:2px;
+    padding:40px 32px 36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:28px;
+  }
+  .kicker{
+    font-family:var(--font-header);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:var(--font-header);
+    font-size:clamp(24px,4vw,34px);
+    margin:0 0 10px;
+    color:var(--text-navy);
+    line-height:1.15;
+  }
+  .intro{
+    font-size:15px;
+    line-height:1.65;
+    color:var(--body-text);
+    margin:0 0 28px;
+    text-align:justify;
+    hyphens:auto;
+  }
+  .intro strong{color:var(--text-navy);}
+  .intro .tour{display:block;margin-top:14px;}
+  .tour{
+    font:inherit;font-size:12.5px;background:none;
+    border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;color:var(--accent-blue);cursor:pointer;
+  }
+  .tour:hover{border-color:var(--accent-blue);}
+  .tour:focus-visible, button:focus-visible{outline:3px solid var(--accent-orange);outline-offset:3px;}
+
+  /* ---------- The grade entry ---------- */
+  .entry{
+    border:2px solid var(--text-navy);
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .entry-bar{
+    background:var(--text-navy);color:var(--paper);
+    font-family:var(--font-header);font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;font-weight:700;padding:7px 14px;
+    display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  }
+  .entry-row{
+    display:grid;
+    grid-template-columns:1.6fr 0.6fr 0.9fr;
+    align-items:center;
+  }
+  .entry-row > div{padding:14px 16px;}
+  .entry-row > div + div{border-left:1px solid var(--line);}
+  .cell-label{
+    font-family:var(--font-header);font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--slate);font-weight:700;margin-bottom:4px;
+  }
+  .account{font-family:var(--font-header);font-weight:700;font-size:15px;line-height:1.3;}
+  .account small{display:block;font-family:var(--font-body);font-weight:400;font-size:12.5px;color:var(--slate);margin-top:2px;}
+  .grade{font-family:var(--font-header);font-weight:700;font-size:30px;line-height:1;}
+  .status-cell{display:flex;align-items:center;justify-content:center;}
+  .status{
+    font-family:var(--font-header);font-weight:700;font-size:12px;letter-spacing:.08em;
+    text-transform:uppercase;text-align:center;line-height:1.15;
+    border:2.5px solid var(--slate);color:var(--slate);border-radius:6px;
+    padding:8px 12px;transform:rotate(-5deg);transition:all .3s ease;
+  }
+  .status.partial{border-color:var(--accent-blue);color:var(--accent-blue);}
+  .status.verified{border-color:var(--accent-orange);color:var(--accent-orange);transform:rotate(-5deg) scale(1.06);}
+
+  .claims{
+    border-top:1px solid var(--line);
+    background:var(--paper-dim);
+    padding:12px 16px 14px;
+  }
+  .claims .cell-label{margin-bottom:8px;}
+  .claims ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;}
+  .claims li{
+    display:grid;grid-template-columns:22px 1fr;gap:6px;
+    font-size:14px;line-height:1.45;color:var(--body-text);
+  }
+  .claims .mark{
+    font-family:var(--font-header);font-weight:700;text-align:center;
+  }
+  .claims li.weak .mark{color:var(--slate);}
+  .claims li.sound .mark{color:var(--accent-blue);}
+  .claims li b{color:var(--text-navy);}
+
+  /* ---------- Checks (pills) ---------- */
+  .dims{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    font-size:12.5px;color:var(--slate);margin:0 0 22px;
+  }
+  .dims-label{font-family:var(--font-header);font-weight:700;color:var(--text-navy);margin-right:4px;}
+  .pill{
+    border:1.5px solid var(--line);border-radius:20px;padding:4px 12px;
+    font-family:var(--font-header);font-size:12px;font-weight:500;color:var(--slate);
+    transition:all .2s ease;
+  }
+  .pill.on{border-color:var(--accent-blue);color:var(--accent-blue);}
+  .pill.on::before{content:"✓ ";}
+
+  /* ---------- Voucher tabs ---------- */
+  .vouchers-head{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:700;color:var(--accent-orange);margin:0 0 10px;
+  }
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:0;}
+  .tab{
+    font:inherit;text-align:left;cursor:pointer;
+    background:var(--paper);border:1.5px solid var(--line);border-bottom:none;
+    border-radius:6px 6px 0 0;padding:12px 14px 10px;color:var(--text-navy);
+    display:flex;flex-direction:column;gap:3px;position:relative;
+    transition:background .2s ease,border-color .2s ease;
+  }
+  .tab:hover{border-color:var(--accent-blue);}
+  .tab .no{font-family:var(--font-header);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);font-weight:700;}
+  .tab .nm{font-family:var(--font-header);font-weight:700;font-size:14.5px;}
+  .tab .st{font-size:12px;color:var(--slate);}
+  .tab.sound .st{color:var(--accent-blue);font-weight:600;}
+  .tab.active{background:var(--paper-dim);border-color:var(--paper-dim);}
+  .tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:4px;background:var(--paper-dim);}
+
+  .voucher{
+    background:var(--paper-dim);
+    border-left:4px solid var(--accent-orange);
+    border-radius:0 4px 4px 4px;
+    padding:20px 22px;
+    display:flex;flex-direction:column;gap:14px;
+    min-height:320px;
+  }
+  .v-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .v-head .label{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent-orange);font-weight:700;
+  }
+  .v-head h2{font-family:var(--font-header);font-size:19px;margin:2px 0 0;color:var(--text-navy);}
+  .toggle{
+    display:inline-flex;border:1.5px solid var(--text-navy);border-radius:20px;overflow:hidden;flex-shrink:0;
+  }
+  .toggle button{
+    font-family:var(--font-header);font-size:12px;font-weight:700;
+    background:var(--paper);color:var(--text-navy);border:none;padding:6px 14px;cursor:pointer;
+  }
+  .toggle button[aria-pressed="true"]{background:var(--text-navy);color:var(--paper);}
+  .toggle button.s[aria-pressed="true"]{background:var(--accent-blue);}
+
+  .standard{
+    font-size:14px;line-height:1.55;color:var(--body-text);
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:10px 12px;
+  }
+  .standard b{
+    display:block;font-family:var(--font-header);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--text-navy);margin-bottom:3px;
+  }
+  .doc{
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;
+    padding:14px 14px 12px;position:relative;
+  }
+  .doc-title{
+    font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    font-weight:700;color:var(--slate);margin-bottom:10px;
+  }
+  .doc.sound .doc-title{color:var(--accent-blue);}
+
+  /* mini tables inside documents */
+  .mini{width:100%;border-collapse:collapse;font-size:13px;line-height:1.45;color:var(--body-text);}
+  .mini th{
+    font-family:var(--font-header);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);color:var(--text-navy);
+  }
+  .mini td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .mini td + td, .mini th + th{border-left:1px solid var(--line);}
+  .mini .lvl{font-family:var(--font-header);font-weight:700;font-size:12px;white-space:nowrap;}
+  .mini .lvl.low{color:var(--slate);}
+  .mini .lvl.high{color:var(--accent-blue);}
+  .mini .open{color:var(--slate);font-style:italic;}
+  .mini .core{font-weight:600;color:var(--text-navy);}
+  .muted-row td{color:var(--slate);}
+  .more{font-size:12px;color:var(--slate);margin-top:8px;font-style:italic;}
+
+  /* feedback flow */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .flow .f{
+    border:1.5px solid var(--line);border-radius:4px;padding:9px 10px;
+    font-size:12.5px;line-height:1.4;color:var(--body-text);
+  }
+  .flow .f b{display:block;font-family:var(--font-header);font-size:12.5px;color:var(--text-navy);margin-bottom:2px;}
+  .flow .f.hl{border-color:var(--accent-blue);}
+  .flow .f.end{border-color:var(--accent-orange);}
+  .prompts{margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.5;color:var(--body-text);}
+  .prompts li{margin-bottom:3px;}
+  .gradeonly{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .gradeonly .big{font-family:var(--font-header);font-weight:700;font-size:28px;color:var(--text-navy);}
+  .gradeonly .note{
+    font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive;color:var(--accent-orange);font-size:16px;
+  }
+  .gradeonly .sub{flex-basis:100%;font-size:12.5px;color:var(--slate);}
+
+  .choice{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;font-size:12.5px;color:var(--slate);}
+  .choice .lab{font-family:var(--font-header);font-weight:700;color:var(--text-navy);margin-right:2px;}
+  .chip{
+    background:var(--paper);border:1px solid var(--accent-blue);border-radius:3px;
+    padding:3px 9px;font-size:12.5px;color:var(--accent-blue);
+  }
+
+  .flag{
+    background:var(--paper);border:1px dashed var(--accent-orange);border-radius:3px;
+    padding:10px 12px;font-size:13.5px;line-height:1.5;color:var(--body-text);
+  }
+  .flag b{color:var(--accent-orange);font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;}
+  .flag.ok{border-color:var(--accent-blue);}
+  .flag.ok b{color:var(--accent-blue);}
+  .cite{font-size:12.5px;color:var(--slate);font-style:italic;}
+
+  .closing{
+    margin-top:22px;padding:14px 16px;border-radius:4px;
+    border:1.5px solid var(--line);font-size:14px;line-height:1.55;color:var(--slate);
+    transition:all .3s ease;
+  }
+  .closing b{font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px;}
+  .closing.posted{border-color:var(--accent-orange);color:var(--body-text);}
+  .closing.posted b{color:var(--accent-orange);}
+
+  footer{
+    margin-top:32px;padding-top:18px;border-top:2px solid var(--line);
+    font-size:12.5px;color:var(--slate);line-height:1.6;
+  }
+
+  @media (max-width:620px){
+    .ledger{padding:28px 18px 26px;}
+    .intro{text-align:left;}
+    .entry-row{grid-template-columns:1fr 1fr;}
+    .entry-row > div:first-child{grid-column:1 / -1;border-bottom:1px solid var(--line);}
+    .entry-row > div:nth-child(2){border-left:none;}
+    .tabs{grid-template-columns:1fr;gap:6px;}
+    .tab{border-bottom:1.5px solid var(--line);border-radius:6px;}
+    .tab.active{border-color:var(--accent-orange);}
+    .tab.active::after{display:none;}
+    .voucher{border-radius:4px;margin-top:8px;padding:18px 16px;}
+    .flow{grid-template-columns:1fr 1fr;}
+    .mini{font-size:12.5px;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="ledger">
+  <header>
+    <p class="kicker">Multimodal Artifact, Reflective Diary: Week 8: Designing Assessments &amp; Evaluations</p>
+    <h1>The Source Ledger</h1>
+  </header>
+
+  <p class="intro">My audit ledger traced how an assessment gets built. This one asks what a grade is worth. In bookkeeping, no entry is posted without a <strong>source document</strong> behind it, such as a receipt, an invoice or a voucher. A grade is an entry too, and its source documents are the <strong>task</strong>, the <strong>feedback</strong>, and the <strong>rubric</strong> that produced it. Below is one entry from my Social Service Work ethics course. Swap each source document between a weak and a sound version, and see whether the grade can be verified: does it represent ethical decision-making (CSAI, 2018; Ling, 2025), does it come with feedback that guides learning (Wisniewski et al., 2020), and does it leave room for students within institutional standards (Ling, 2025)? <button class="tour" id="tourBtn">▶ Examine the sources</button></p>
+
+  <!-- The grade entry -->
+  <section class="entry" aria-label="Grade entry">
+    <div class="entry-bar"><span>General ledger · Grade entry</span><span>Fall term</span></div>
+    <div class="entry-row">
+      <div>
+        <div class="cell-label">Account</div>
+        <div class="account">Ethics: OCSWSSW Code of Ethics assessment<small>Ontario College of Social Workers and Social Service Workers</small></div>
+      </div>
+      <div>
+        <div class="cell-label">Entry</div>
+        <div class="grade">B+</div>
+      </div>
+      <div class="status-cell">
+        <div class="status" id="status" aria-live="polite">Unverified</div>
+      </div>
+    </div>
+    <div class="claims">
+      <div class="cell-label">What this grade can honestly tell us</div>
+      <ul id="claims" aria-live="polite"></ul>
+    </div>
+  </section>
+
+  <div class="dims">
+    <span class="dims-label">Verification checks:</span>
+    <span class="pill" data-dim="task">Construct validity</span>
+    <span class="pill" data-dim="feedback">High-information feedback</span>
+    <span class="pill" data-dim="rubric">Autonomy within standards</span>
+  </div>
+
+  <p class="vouchers-head">Source documents behind the entry</p>
+  <div class="tabs" role="tablist" aria-label="Source documents">
+    <button class="tab" role="tab" data-id="task" aria-selected="false"><span class="no">Voucher No. 1</span><span class="nm">Task blueprint</span><span class="st"></span></button>
+    <button class="tab" role="tab" data-id="feedback" aria-selected="false"><span class="no">Voucher No. 2</span><span class="nm">Feedback record</span><span class="st"></span></button>
+    <button class="tab" role="tab" data-id="rubric" aria-selected="false"><span class="no">Voucher No. 3</span><span class="nm">Rubric</span><span class="st"></span></button>
+  </div>
+  <section class="voucher" id="voucher" role="tabpanel" aria-live="polite"></section>
+
+  <div class="closing" id="closing" aria-live="polite"></div>
+
+  <footer>
+    Sources: Center on Standards &amp; Assessment Implementation (CSAI, 2018) · Ling (2025) · Wisniewski et al. (2020).<br>
+    Built as a companion to my written reflection, with AI as a thinking partner to structure and build the page.
+  </footer>
+</div>
+
+<script>
+const order = ["task","feedback","rubric"];
+const state = { task:"weak", feedback:"weak", rubric:"weak" };
+let currentTab = "task";
+
+const docs = {
+  task:{
+    label:"Voucher No. 1 · Task blueprint",
+    title:"Does the task measure the intended construct?",
+    standard:"Validity is the degree to which conclusions drawn from results represent the intended construct. A task that misses part of an outcome underrepresents it (CSAI, 2018). A blueprint documents how each task maps to an outcome, which keeps construct-irrelevant skills out of the score (CSAI, 2018; Ling, 2025).",
+    cite:"CSAI (2018); Ling (2025)",
+    weak:{
+      tabNote:"Weak: recall quiz",
+      claim:"<b>Task:</b> the student recalled terms from the Code. It says little about ethical decision-making.",
+      doc:`<div class="doc-title">Blueprint on file · Code of Ethics quiz</div>
+        <table class="mini">
+          <thead><tr><th>Item</th><th>Bloom's level</th><th>Evidence collected</th></tr></thead>
+          <tbody>
+            <tr><td>Define confidentiality</td><td><span class="lvl low">Remember</span></td><td>Matches the Code's wording</td></tr>
+            <tr><td>List the Code's principles</td><td><span class="lvl low">Remember</span></td><td>Correct list, in order</td></tr>
+            <tr><td>Match terms to definitions</td><td><span class="lvl low">Remember</span></td><td>Number correct</td></tr>
+          </tbody>
+        </table>`,
+      flag:{cls:"", title:"Exception", text:"Every item sits at the lowest level. The outcome asks students to practise ethically, so the quiz underrepresents the construct, and a high score can't support that conclusion (CSAI, 2018)."}
+    },
+    sound:{
+      tabNote:"Sound: case analysis",
+      claim:"<b>Task:</b> the student can identify competing principles, weigh client impact, and justify an action in a realistic case.",
+      doc:`<div class="doc-title">Blueprint on file · Ethical case analysis</div>
+        <table class="mini">
+          <thead><tr><th>Outcome component</th><th>Bloom's level</th><th>Evidence collected</th></tr></thead>
+          <tbody>
+            <tr><td>Identify the competing ethical principles in the case</td><td><span class="lvl high">Analyze</span></td><td>Principles named and linked to case details</td></tr>
+            <tr><td>Weigh the impact of each option on the client</td><td><span class="lvl high">Evaluate</span></td><td>Reasoned comparison of options</td></tr>
+            <tr><td>Justify a course of action</td><td><span class="lvl high">Evaluate</span></td><td>Defensible plan, grounded in the Code</td></tr>
+          </tbody>
+        </table>
+        <div class="more">Recall still matters as the foundation, but it is assessed in service of the decision, not in place of it.</div>`,
+      flag:{cls:"ok", title:"Verified", text:"Each part of the outcome has a matching piece of evidence, and the criteria target reasoning rather than surface mechanics such as formatting (Ling, 2025)."}
+    }
+  },
+  feedback:{
+    label:"Voucher No. 2 · Feedback record",
+    title:"Does feedback keep learning going after the grade?",
+    standard:"Grades, rewards, and praise carry little information and do little for learning. High-information feedback, which combines task correctness with guidance on process and self-regulation, has a very large effect (d = 0.99; Wisniewski et al., 2020).",
+    cite:"Wisniewski et al. (2020)",
+    weak:{
+      tabNote:"Weak: grade only",
+      claim:"<b>Feedback:</b> the student knows where they landed, but not why or how to improve.",
+      doc:`<div class="doc-title">Feedback on file</div>
+        <div class="gradeonly">
+          <span class="big">B+</span>
+          <span class="note">Good work!</span>
+          <span class="sub">Returned after the final submission. No revision opportunity.</span>
+        </div>`,
+      flag:{cls:"", title:"Exception", text:"The record closes the transaction. Students wait passively for a mark, and nothing in it helps them monitor or adjust their own reasoning (Wisniewski et al., 2020)."}
+    },
+    sound:{
+      tabNote:"Sound: peer + process",
+      claim:"<b>Feedback:</b> the grade reflects work the student revised after process-level feedback on their reasoning.",
+      doc:`<div class="doc-title">Feedback on file · Before the grade is recorded</div>
+        <div class="flow">
+          <div class="f"><b>1. Draft</b>Initial ethical analysis of the case</div>
+          <div class="f hl"><b>2. Peer exchange</b>Analyses swapped, answered with process prompts</div>
+          <div class="f hl"><b>3. Revise</b>Student tests assumptions and strengthens reasoning</div>
+          <div class="f end"><b>4. Grade</b>Recorded only after revision</div>
+        </div>
+        <ul class="prompts">
+          <li>What ethical perspective did your peer consider that you did not?</li>
+          <li>Which of your assumptions needs testing, and how would you test it?</li>
+          <li>Where would a client see this situation differently?</li>
+        </ul>`,
+      flag:{cls:"ok", title:"Verified", text:"The prompts ask about process and self-regulation, not just correctness, so students become active evaluators of ethical reasoning rather than recipients of a mark (Wisniewski et al., 2020)."}
+    }
+  },
+  rubric:{
+    label:"Voucher No. 3 · Rubric",
+    title:"Does the rubric meet standards and leave room for students?",
+    standard:"Institutions require rubrics for consistency and transparency, but hyper-detailed rubrics can reduce learning to \"criteria compliance.\" A single-point rubric states the core standard and leaves space for how students meet it. Co-creating criteria or discussing exemplars shares ownership of quality (Ling, 2025).",
+    cite:"Ling (2025)",
+    weak:{
+      tabNote:"Weak: compliance grid",
+      claim:"<b>Rubric:</b> the student followed a checklist, which may include formatting and length as much as ethics.",
+      doc:`<div class="doc-title">Rubric on file · Analytic grid</div>
+        <table class="mini">
+          <thead><tr><th>Criterion</th><th>4</th><th>3</th><th>2</th><th>1</th></tr></thead>
+          <tbody>
+            <tr><td>Names an ethical principle</td><td>✓</td><td></td><td></td><td></td></tr>
+            <tr class="muted-row"><td>APA formatting</td><td></td><td>✓</td><td></td><td></td></tr>
+            <tr class="muted-row"><td>Uses required headings</td><td>✓</td><td></td><td></td><td></td></tr>
+            <tr class="muted-row"><td>Exactly three pages</td><td></td><td></td><td>✓</td><td></td></tr>
+            <tr class="muted-row"><td>Written report format</td><td>✓</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="more">…plus seven more criteria, each with four pre-written performance boxes.</div>`,
+      flag:{cls:"", title:"Exception", text:"Most criteria score mechanics, not ethical reasoning, and every student must produce the same written report. The grade blends construct-irrelevant skills into the score and leaves no room for choice (Ling, 2025)."}
+    },
+    sound:{
+      tabNote:"Sound: single-point",
+      claim:"<b>Rubric:</b> the student met the institution's core standards, in a context and format they chose.",
+      doc:`<div class="doc-title">Rubric on file · Single-point</div>
+        <table class="mini">
+          <thead><tr><th>Areas for growth</th><th>Core standard</th><th>Evidence of strength</th></tr></thead>
+          <tbody>
+            <tr><td class="open">Open comment</td><td class="core">Accurately identifies the relevant OCSWSSW ethical principle</td><td class="open">Open comment</td></tr>
+            <tr><td class="open">Open comment</td><td class="core">Evaluates boundaries and power dynamics</td><td class="open">Open comment</td></tr>
+            <tr><td class="open">Open comment</td><td class="core">Proposes a viable, justified action plan</td><td class="open">Open comment</td></tr>
+          </tbody>
+        </table>
+        <div class="choice"><span class="lab">Student chooses the context:</span><span class="chip">Child welfare</span><span class="chip">Harm reduction</span><span class="chip">Mental health</span></div>
+        <div class="choice"><span class="lab">…and the format:</span><span class="chip">Written brief</span><span class="chip">Simulated case conference</span><span class="chip">Reflective podcast</span></div>`,
+      flag:{cls:"ok", title:"Verified", text:"Institutional requirements form the core standards, and autonomy is built around them. A few focused criteria keep the score tied to the learning goal, and exemplars discussed in class show what quality looks like (Ling, 2025)."}
+    }
+  }
+};
+
+const statusEl = document.getElementById('status');
+const claimsEl = document.getElementById('claims');
+const voucherEl = document.getElementById('voucher');
+const closingEl = document.getElementById('closing');
+const tabs = document.querySelectorAll('.tab');
+const pills = document.querySelectorAll('.pill');
+
+function renderEntry(){
+  const sound = order.filter(k=>state[k]==="sound").length;
+  statusEl.className = 'status' + (sound===3 ? ' verified' : sound>0 ? ' partial' : '');
+  statusEl.innerHTML = sound===3 ? 'Verified<br>&amp; posted' : sound>0 ? `Partly<br>supported · ${sound}/3` : 'Unverified';
+
+  claimsEl.innerHTML = order.map(k=>{
+    const v = docs[k][state[k]];
+    return `<li class="${state[k]}"><span class="mark">${state[k]==="sound" ? "✓" : "–"}</span><span>${v.claim}</span></li>`;
+  }).join('');
+
+  pills.forEach(p=>p.classList.toggle('on', state[p.dataset.dim]==="sound"));
+
+  tabs.forEach(t=>{
+    const id = t.dataset.id;
+    t.classList.toggle('sound', state[id]==="sound");
+    t.querySelector('.st').textContent = docs[id][state[id]].tabNote;
+  });
+
+  if(sound===3){
+    closingEl.className = 'closing posted';
+    closingEl.innerHTML = `<b>Closing entry · Posted</b>Every source document holds up: a task aligned to the outcome, feedback that informed revision, and a rubric that is clear without being confining. Now the B+ reflects what this student can actually do in practice.`;
+  } else {
+    closingEl.className = 'closing';
+    closingEl.innerHTML = `<b>Closing entry · Held</b>A grade is only as trustworthy as the evidence behind it. ${3-sound} source document${3-sound===1?'':'s'} still can't support the entry.`;
+  }
+}
+
+function renderVoucher(id){
+  currentTab = id;
+  const d = docs[id];
+  const v = d[state[id]];
+  voucherEl.innerHTML = `
+    <div class="v-head">
+      <div>
+        <div class="label">${d.label}</div>
+        <h2>${d.title}</h2>
+      </div>
+      <div class="toggle" role="group" aria-label="Choose version of this source document">
+        <button class="w" aria-pressed="${state[id]==="weak"}" data-v="weak">Weak source</button>
+        <button class="s" aria-pressed="${state[id]==="sound"}" data-v="sound">Sound source</button>
+      </div>
+    </div>
+    <div class="standard"><b>Audit standard · what the research requires</b>${d.standard}</div>
+    <div class="doc ${state[id]}">${v.doc}</div>
+    <div class="flag ${v.flag.cls}"><b>${v.flag.title}</b>${v.flag.text}</div>
+    <div class="cite">${d.cite}</div>
+  `;
+  voucherEl.querySelectorAll('.toggle button').forEach(b=>{
+    b.addEventListener('click', ()=>{ state[id] = b.dataset.v; renderVoucher(id); renderEntry(); });
+  });
+  tabs.forEach(t=>{
+    const on = t.dataset.id===id;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on);
+  });
+}
+
+tabs.forEach(t=>t.addEventListener('click', ()=>renderVoucher(t.dataset.id)));
+
+// Guided tour: show each weak source, then replace it with the sound one, then reset.
+let step = -1;
+const tourSteps = [];
+order.forEach(k=>{ tourSteps.push([k,"weak"]); tourSteps.push([k,"sound"]); });
+const tourBtn = document.getElementById('tourBtn');
+tourBtn.addEventListener('click', ()=>{
+  step++;
+  if(step >= tourSteps.length){
+    step = -1;
+    order.forEach(k=>state[k]="weak");
+    renderVoucher("task"); renderEntry();
+    tourBtn.textContent = "▶ Examine the sources";
+    return;
+  }
+  const [k,v] = tourSteps[step];
+  if(step===0) order.forEach(x=>state[x]="weak");
+  state[k] = v;
+  renderVoucher(k); renderEntry();
+  tourBtn.textContent = step === tourSteps.length-1 ? "↺ Reset the ledger" : (v==="weak" ? "▶ Replace with a sound source" : "▶ Next source document");
+  voucherEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+renderVoucher("task");
+renderEntry();
+</script>
+</body>
+</html>
