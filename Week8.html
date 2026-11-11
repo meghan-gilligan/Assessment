@@ -308,7 +308,7 @@
     <div class="entry-row">
       <div>
         <div class="cell-label">Account</div>
-        <div class="account">Ethics: OCSWSSW Code of Ethics assessment<small>Ontario College of Social Workers and Social Service Workers</small></div>
+        <div class="account">Ethics: Code of Ethics and Standards of Practice assessment<small>Ontario College of Social Workers and Social Service Workers</small></div>
       </div>
       <div>
         <div class="cell-label">Entry</div>
@@ -342,7 +342,7 @@
   <div class="closing" id="closing" aria-live="polite"></div>
 
   <footer>
-    Sources: Center on Standards &amp; Assessment Implementation (CSAI, 2018) · Ling (2025) · Wisniewski et al. (2020).<br>
+    Sources: Center on Standards &amp; Assessment Implementation (CSAI, 2018) · Gaid &amp; Cahapay (2025) · Ling (2025) · Wisniewski et al. (2020).<br>
     Built as a companion to my written reflection, with AI as a thinking partner to structure and build the page.
   </footer>
 </div>
@@ -363,25 +363,25 @@ const docs = {
       claim:"<b>Task:</b> the student recalled terms from the Code. It says little about ethical decision-making.",
       doc:`<div class="doc-title">Blueprint on file · Code of Ethics quiz</div>
         <table class="mini">
-          <thead><tr><th>Item</th><th>Bloom's level</th><th>Evidence collected</th></tr></thead>
+          <thead><tr><th>Item</th><th>SOLO level</th><th>Evidence collected</th></tr></thead>
           <tbody>
-            <tr><td>Define confidentiality</td><td><span class="lvl low">Remember</span></td><td>Matches the Code's wording</td></tr>
-            <tr><td>List the Code's principles</td><td><span class="lvl low">Remember</span></td><td>Correct list, in order</td></tr>
-            <tr><td>Match terms to definitions</td><td><span class="lvl low">Remember</span></td><td>Number correct</td></tr>
+            <tr><td>Define confidentiality</td><td><span class="lvl low">Unistructural</span></td><td>Matches the Code's wording</td></tr>
+            <tr><td>List the Code's principles</td><td><span class="lvl low">Multistructural</span></td><td>Correct list, in order</td></tr>
+            <tr><td>Match terms to definitions</td><td><span class="lvl low">Unistructural</span></td><td>Number correct</td></tr>
           </tbody>
         </table>`,
-      flag:{cls:"", title:"Exception", text:"Every item sits at the lowest level. The outcome asks students to practise ethically, so the quiz underrepresents the construct, and a high score can't support that conclusion (CSAI, 2018)."}
+      flag:{cls:"", title:"Exception", text:"Every item sits at the surface levels (Gaid &amp; Cahapay, 2025). The outcome asks students to practise ethically, so the quiz underrepresents the construct, and a high score can't support that conclusion (CSAI, 2018)."}
     },
     sound:{
       tabNote:"Sound: case analysis",
       claim:"<b>Task:</b> the student can identify competing principles, weigh client impact, and justify an action in a realistic case.",
       doc:`<div class="doc-title">Blueprint on file · Ethical case analysis</div>
         <table class="mini">
-          <thead><tr><th>Outcome component</th><th>Bloom's level</th><th>Evidence collected</th></tr></thead>
+          <thead><tr><th>Outcome component</th><th>SOLO level</th><th>Evidence collected</th></tr></thead>
           <tbody>
-            <tr><td>Identify the competing ethical principles in the case</td><td><span class="lvl high">Analyze</span></td><td>Principles named and linked to case details</td></tr>
-            <tr><td>Weigh the impact of each option on the client</td><td><span class="lvl high">Evaluate</span></td><td>Reasoned comparison of options</td></tr>
-            <tr><td>Justify a course of action</td><td><span class="lvl high">Evaluate</span></td><td>Defensible plan, grounded in the Code</td></tr>
+            <tr><td>Identify the competing ethical principles in the case</td><td><span class="lvl high">Relational</span></td><td>Principles named and linked to case details</td></tr>
+            <tr><td>Weigh the impact of each option on the client</td><td><span class="lvl high">Relational</span></td><td>Reasoned comparison of options</td></tr>
+            <tr><td>Justify a course of action</td><td><span class="lvl high">Extended abstract</span></td><td>Defensible plan, grounded in the Code</td></tr>
           </tbody>
         </table>
         <div class="more">Recall still matters as the foundation, but it is assessed in service of the decision, not in place of it.</div>`,
@@ -391,7 +391,7 @@ const docs = {
   feedback:{
     label:"Voucher No. 2 · Feedback record",
     title:"Does feedback keep learning going after the grade?",
-    standard:"Grades, rewards, and praise carry little information and do little for learning. High-information feedback, which combines task correctness with guidance on process and self-regulation, has a very large effect (d = 0.99; Wisniewski et al., 2020).",
+    standard:"Rewards and praise carry little information and do little for learning. High-information feedback, which combines task correctness with guidance on process and self-regulation, has a very large effect (d = 0.99; Wisniewski et al., 2020).",
     cite:"Wisniewski et al. (2020)",
     weak:{
       tabNote:"Weak: grade only",
@@ -415,6 +415,7 @@ const docs = {
           <div class="f end"><b>4. Grade</b>Recorded only after revision</div>
         </div>
         <ul class="prompts">
+          <li>Why is this the best course of action?</li>
           <li>What ethical perspective did your peer consider that you did not?</li>
           <li>Which of your assumptions needs testing, and how would you test it?</li>
           <li>Where would a client see this situation differently?</li>
@@ -458,7 +459,7 @@ const docs = {
         </table>
         <div class="choice"><span class="lab">Student chooses the context:</span><span class="chip">Child welfare</span><span class="chip">Harm reduction</span><span class="chip">Mental health</span></div>
         <div class="choice"><span class="lab">…and the format:</span><span class="chip">Written brief</span><span class="chip">Simulated case conference</span><span class="chip">Reflective podcast</span></div>`,
-      flag:{cls:"ok", title:"Verified", text:"Institutional requirements form the core standards, and autonomy is built around them. A few focused criteria keep the score tied to the learning goal, and exemplars discussed in class show what quality looks like (Ling, 2025)."}
+      flag:{cls:"ok", title:"Verified", text:"Institutional requirements form the core standards, and autonomy is built around them. A few focused criteria keep the score tied to the learning goal, and exemplars discussed in class would show what quality looks like (Ling, 2025)."}
     }
   }
 };
