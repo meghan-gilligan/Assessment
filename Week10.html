@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Exchange Ledger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
+  :root{
+    --bg-ink:#1B1B18;
+    --paper:#FFFFFF;
+    --paper-dim:#F2F2F2;
+    --text-navy:#003C71;
+    --accent-blue:#0077CA;
+    --accent-orange:#E75D2A;
+    --slate:#5B6770;
+    --line:#D8D8D8;
+    --dots-bg:#00283C;
+    --body-text:#26313a;
+    --font-header:'Ubuntu', -apple-system, sans-serif;
+    --font-body:'ITC Franklin Gothic Std','Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg-ink);
+    background-image:radial-gradient(var(--dots-bg) 1px, transparent 1px);
+    background-size:18px 18px;
+    font-family:var(--font-body);
+    color:var(--text-navy);
+    min-height:100vh;
+    padding:32px 16px 64px;
+  }
+  .ledger{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:2px;
+    padding:40px 32px 36px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+  }
+  header{
+    border-bottom:2px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:28px;
+  }
+  .kicker{
+    font-family:var(--font-header);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--accent-orange);
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:var(--font-header);
+    font-size:clamp(24px,4vw,34px);
+    margin:0 0 10px;
+    color:var(--text-navy);
+    line-height:1.15;
+  }
+  .intro{
+    font-size:15px;
+    line-height:1.65;
+    color:var(--body-text);
+    margin:0 0 28px;
+    text-align:justify;
+    hyphens:auto;
+  }
+  .intro strong{color:var(--text-navy);}
+  .intro .tour{display:block;margin-top:14px;}
+  .tour{
+    font:inherit;font-size:12.5px;background:none;
+    border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;color:var(--accent-blue);cursor:pointer;
+  }
+  .tour:hover{border-color:var(--accent-blue);}
+  .tour:focus-visible, button:focus-visible{outline:3px solid var(--accent-orange);outline-offset:3px;}
+
+    /* ---------- Lens toggle ---------- */
+  .lensbar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    margin:0 0 12px;
+  }
+  .lensbar .lab{font-family:var(--font-header);font-weight:700;font-size:12.5px;color:var(--text-navy);}
+  .lensbar .hint{font-size:12.5px;color:var(--slate);}
+  .toggle{display:inline-flex;border:1.5px solid var(--text-navy);border-radius:20px;overflow:hidden;}
+  .toggle button{
+    font-family:var(--font-header);font-size:12px;font-weight:700;
+    background:var(--paper);color:var(--text-navy);border:none;padding:6px 14px;cursor:pointer;
+  }
+  .toggle button[aria-pressed="true"]{background:var(--text-navy);color:var(--paper);}
+  .toggle button.i[aria-pressed="true"]{background:var(--accent-blue);}
+
+  /* ---------- Journal ---------- */
+  .journal{border:2px solid var(--text-navy);border-radius:4px;overflow:hidden;margin-bottom:22px;}
+  .journal-bar{
+    background:var(--text-navy);color:var(--paper);
+    font-family:var(--font-header);font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;font-weight:700;padding:7px 14px;
+    display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  }
+  .jhead,.jrow{
+    display:grid;grid-template-columns:0.75fr 1.5fr 0.7fr 2fr;align-items:stretch;
+  }
+  .jhead > div{
+    font-family:var(--font-header);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--slate);font-weight:700;padding:8px 12px;border-bottom:2px solid var(--line);
+  }
+  .jhead > div + div,.jrow > span + span{border-left:1px solid var(--line);}
+  .jhead .valcol{transition:color .2s ease;}
+  .jhead .valcol.info{color:var(--accent-blue);}
+  .jhead .valcol.cur{color:var(--accent-orange);}
+  .jrow{
+    width:100%;font:inherit;text-align:left;background:var(--paper);border:none;
+    border-bottom:1px solid var(--line);cursor:pointer;padding:0;color:inherit;
+    transition:background .2s ease;
+  }
+  .jrow:last-child{border-bottom:none;}
+  .jrow:hover{background:var(--paper-dim);}
+  .jrow.sel{background:var(--paper-dim);box-shadow:inset 4px 0 0 var(--accent-orange);}
+  .jrow > span{padding:11px 12px;font-size:13.5px;line-height:1.45;color:var(--body-text);}
+  .jrow .date{font-family:var(--font-header);font-weight:700;font-size:12.5px;color:var(--text-navy);}
+  .jrow .date small{display:block;font-family:var(--font-body);font-weight:400;color:var(--slate);font-size:11.5px;}
+  .jrow .acct{font-family:var(--font-header);font-weight:700;font-size:14px;color:var(--text-navy);}
+  .jrow .acct small{display:block;font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--slate);margin-top:2px;}
+  .jrow .mark{font-family:var(--font-header);font-weight:700;font-size:17px;color:var(--text-navy);}
+  .jrow .val.cur{color:var(--body-text);}
+  .jrow .val.info{color:var(--body-text);}
+  .jrow .val .tag{
+    display:inline-block;font-family:var(--font-header);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;font-weight:700;margin-right:6px;
+  }
+  .jrow .val.cur .tag{color:var(--accent-orange);}
+  .jrow .val.info .tag{color:var(--accent-blue);}
+  .jrow.forward .acct,.jrow.forward .mark{color:var(--accent-blue);}
+  .jrow.forward .date{color:var(--accent-blue);}
+  .jrow.opening{background:#FAFAFA;}
+  .jrow.opening.sel{background:var(--paper-dim);}
+
+  /* ---------- Entry detail ---------- */
+  .detail{
+    background:var(--paper-dim);border-left:4px solid var(--accent-orange);
+    border-radius:0 4px 4px 0;padding:18px 20px;margin-bottom:22px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .d-label{font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-orange);font-weight:700;}
+  .detail h2{font-family:var(--font-header);font-size:19px;margin:2px 0 0;color:var(--text-navy);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .side{background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:10px 12px;font-size:13.5px;line-height:1.5;color:var(--body-text);}
+  .side b{display:block;font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;}
+  .side.cur{border-top:3px solid var(--accent-orange);}
+  .side.cur b{color:var(--accent-orange);}
+  .side.info{border-top:3px solid var(--accent-blue);}
+  .side.info b{color:var(--accent-blue);}
+  .side.dim{opacity:.55;}
+  .note{
+    background:var(--paper);border:1px dashed var(--accent-orange);border-radius:3px;
+    padding:10px 12px;font-size:13.5px;line-height:1.5;color:var(--body-text);
+  }
+  .note b{color:var(--accent-orange);font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;}
+  .note.ok{border-color:var(--accent-blue);}
+  .note.ok b{color:var(--accent-blue);}
+  .regline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--slate);}
+  .regline .rl{font-family:var(--font-header);font-weight:700;color:var(--text-navy);}
+  .regchip{
+    font-family:var(--font-header);font-size:12px;font-weight:700;border-radius:20px;
+    padding:3px 11px;border:1.5px solid var(--slate);color:var(--slate);
+  }
+  .regchip.low{border-color:var(--accent-orange);color:var(--accent-orange);}
+  .regchip.high{border-color:var(--accent-blue);color:var(--accent-blue);}
+  .cite{font-size:12.5px;color:var(--slate);font-style:italic;}
+
+  /* ---------- Motivation balance chart ---------- */
+  .chart{border:1.5px solid var(--line);border-radius:4px;padding:14px 14px 10px;margin-bottom:22px;}
+  .chart-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .chart-head .t{font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--accent-orange);}
+  .chart-head .s{font-size:12px;color:var(--slate);}
+  .chart svg{width:100%;height:auto;display:block;}
+  .chart svg text{font-family:var(--font-header);}
+  .chart .pt{cursor:pointer;}
+  .chart .pt:focus-visible{outline:none;}
+  .chart .pt:focus-visible circle.ring{stroke:var(--accent-orange);stroke-width:3;}
+
+  .closing{
+    margin-top:4px;padding:14px 16px;border-radius:4px;
+    border:1.5px solid var(--line);font-size:14px;line-height:1.55;color:var(--slate);
+    transition:all .3s ease;
+  }
+  .closing b{font-family:var(--font-header);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px;}
+  .closing.posted{border-color:var(--accent-orange);color:var(--body-text);}
+  .closing.posted b{color:var(--accent-orange);}
+
+  footer{
+    margin-top:32px;padding-top:18px;border-top:2px solid var(--line);
+    font-size:12.5px;color:var(--slate);line-height:1.6;
+  }
+
+  @media (max-width:680px){
+    .ledger{padding:28px 18px 26px;}
+    .intro{text-align:left;}
+    .jhead{display:none;}
+    .jrow{grid-template-columns:1fr auto;}
+    .jrow > span + span{border-left:none;}
+    .jrow .date{grid-column:1 / -1;padding-bottom:0;}
+    .jrow .acct{padding-top:4px;}
+    .jrow .mark{text-align:right;padding-top:4px;}
+    .jrow .val{grid-column:1 / -1;padding-top:0;}
+    .two{grid-template-columns:1fr;}
+    .detail{padding:16px 14px;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;scroll-behavior:auto !important;} }
+</style>
+</head>
+<body>
+<div class="ledger">
+  <header>
+    <p class="kicker">Multimodal Artifact, Reflective Diary: Week 10: Grades &amp; Motivation</p>
+    <h1>The Exchange Ledger</h1>
+  </header>
+
+  <p class="intro">My source ledger asked whether a grade can be verified. This one asks what a grade is worth to the person who receives it. Every mark is posted in two currencies at once: its <strong>exchange value</strong>, what it buys (a credit, a pass, a rank), and its <strong>information value</strong>, what it tells a learner about their learning (Williams, 2022). Because a single mark blends achievement with effort and work habits (Brookhart et al., 2016), the second currency is easy to lose. Below are six entries, from Yale's secret Book of Averages to my own classroom. Switch the reading lens, open each entry, and follow where my motivation landed on Ryan and Deci's (2020) continuum. <button class="tour" id="tourBtn">▶ Audit the exchange</button></p>
+
+  <div class="lensbar">
+    <div>
+      <span class="lab">Read every entry as:</span>
+      <span class="hint" id="lensHint">what the mark bought</span>
+    </div>
+    <div class="toggle" role="group" aria-label="Reading lens">
+      <button class="c" data-lens="cur" aria-pressed="true">Currency</button>
+      <button class="i" data-lens="info" aria-pressed="false">Information</button>
+    </div>
+  </div>
+
+  <section class="journal" aria-label="Grade journal">
+    <div class="journal-bar"><span>General journal · Grades received</span><span id="openedCount">0 of 6 entries opened</span></div>
+    <div class="jhead" aria-hidden="true">
+      <div>Date</div><div>Account</div><div>Mark</div><div class="valcol cur" id="valHead">Exchange value</div>
+    </div>
+    <div id="rows"></div>
+  </section>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <section class="chart" aria-label="Motivation balance chart">
+    <div class="chart-head">
+      <span class="t">Motivation balance · where each entry left me</span>
+      <span class="s">Select a point to open its entry</span>
+    </div>
+    <svg id="chart" viewBox="0 0 640 248" role="img" aria-labelledby="chartTitle chartDesc">
+      <title id="chartTitle">Motivation balance across five grade entries</title>
+      <desc id="chartDesc">Grade 4 report card: introjected. Grade 10 math: introjected. Grade 11 applied math: amotivation. Reflective diaries in this course: identified. My future students: identified, as a goal.</desc>
+    </svg>
+  </section>
+
+  <div class="closing" id="closing" aria-live="polite"></div>
+
+  <footer>
+    Sources: Brookhart et al. (2016) · Ryan &amp; Deci (2020) · Williams (2022).<br>
+    Built as a companion to my written reflection, with AI as a thinking partner to structure and build the page.
+  </footer>
+</div>
+
+<script>
+const REG = ["Amotivation","External","Introjected","Identified","Intrinsic"];
+
+const entries = [
+  {
+    id:"yale", date:"After 1785", dateSub:"Yale College",
+    acct:"Book of Averages", acctSub:"Seniors ranked on a 1–4 scale",
+    mark:"1–4", opening:true,
+    cur:"None during the term. Rank stayed in coded notation and was revealed only at commencement.",
+    info:"Certified competence for the faculty, discreetly, without fuelling rivalry among students.",
+    label:"Opening balance · The original intention",
+    title:"A grade that was not meant to be spent",
+    curLong:"The faculty kept the ledger secret, so students could not trade their standing during the term. There was nothing to compete for until commencement.",
+    infoLong:"Earlier still, medieval universities licensed scholars once their work met an established standard, with no scores at all. Assessment came from assidere, to sit beside (Williams, 2022).",
+    note:{cls:"ok", t:"Audit note", x:"The original intention was to certify competence quietly. Grades only became a currency once they were published, compared, and exchanged for advancement (Williams, 2022)."},
+    reg:null, cite:"Williams (2022)"
+  },
+  {
+    id:"g4", date:"Grade 4", dateSub:"Report card",
+    acct:"Elementary math", acctSub:"Comment on my report card",
+    mark:"Behind",
+    cur:"Proof, to a self-critical child, that I was not enough.",
+    info:"Named a gap in my math learning that could have been addressed.",
+    label:"Entry 1 · Grade 4",
+    title:"A comment I spent on my self-worth",
+    curLong:"I read the report card as a verdict on me rather than on my math skills. Marks became the measure of whether I was enough.",
+    infoLong:"The comment did hold information: it identified how far behind I was. But information I could not act on still felt like judgment.",
+    note:{cls:"", t:"Exception", x:"Feedback that feels like a verdict carries controlling significance. It drives introjected regulation, motivation fuelled by anxiety, guilt, and contingent self-worth (Ryan & Deci, 2020)."},
+    reg:2, cite:"Ryan & Deci (2020)"
+  },
+  {
+    id:"g10", date:"Grade 10", dateSub:"Academic math",
+    acct:"Math", acctSub:"Final mark on my transcript",
+    mark:"Pass",
+    cur:"The credit. A pass that let me move on.",
+    info:"The phone call: I had worked hard, but I did not know the material and should attend summer school.",
+    label:"Entry 2 · Grade 10",
+    title:"What the transcript kept, and what it lost",
+    curLong:"The transcript recorded a passing mark. It bought me the credit, and it is the only part of the story that followed me.",
+    infoLong:"My teacher called home. He had seen my extra help sessions and my tutor, and he told my parents exactly what I still needed. That conversation was the closest I came to assidere: he sat beside my learning.",
+    note:{cls:"", t:"Exception", x:"The pass recorded my persistence, not my understanding. Grades blend achievement with academic enablers such as effort and work habits, which makes them weak diagnostic tools (Brookhart et al., 2016)."},
+    reg:2, cite:"Brookhart et al. (2016); Williams (2022)"
+  },
+  {
+    id:"g11", date:"Grade 11", dateSub:"Applied math",
+    acct:"Math", acctSub:"My last math course",
+    mark:"80%",
+    cur:"A strong mark and the last math credit I needed.",
+    info:"Very little. It rewarded my performance without rebuilding my sense of competence.",
+    label:"Entry 3 · Grade 11",
+    title:"A good mark that closed the account",
+    curLong:"An 80% looks like success on a transcript. It bought the credit and an exit from math.",
+    infoLong:"The mark said nothing about whether I now understood the concepts I had missed in Grade 10. I never took math again.",
+    note:{cls:"", t:"Exception", x:"When learners feel neither competent nor in control, motivation can slide into amotivation. A high mark cannot repair a missing sense of competence (Ryan & Deci, 2020)."},
+    reg:0, cite:"Ryan & Deci (2020)"
+  },
+  {
+    id:"diary", date:"This term", dateSub:"EDUC 5305G",
+    acct:"Reflective diaries", acctSub:"Early weekly submissions",
+    mark:"Grade + comments",
+    cur:"My eyes went to the number first.",
+    info:"The specific comments guided my revisions and strengthened my later work.",
+    label:"Entry 4 · This course",
+    title:"Feedback I could invest",
+    curLong:"When grades and comments arrive together, students often treat the grade as a verdict and overlook the coaching (Williams, 2022). I felt that pull.",
+    infoLong:"The comments told me what worked and what to change. I revised because I value the skill, not the mark.",
+    note:{cls:"ok", t:"Verified", x:"Feedback with informational significance supports competence and autonomy, moving motivation toward identified regulation (Ryan & Deci, 2020)."},
+    reg:3, cite:"Ryan & Deci (2020); Williams (2022)"
+  },
+  {
+    id:"fwd", date:"Next term", dateSub:"Forward entry", forward:true,
+    acct:"My SSW students", acctSub:"Social Service Work program",
+    mark:"Comments first",
+    cur:"The grade still counts toward the credential, but it arrives after the feedback.",
+    info:"Self-assessment against the rubric, comments released before marks, and clear next steps with every grade.",
+    label:"Forward entry · Not yet posted",
+    title:"The same power my math teacher held",
+    curLong:"My students need their grades to graduate and practise. I cannot remove the exchange value, but I can stop it from arriving alone.",
+    infoLong:"I will stop returning bare scores, start releasing comments before marks where possible, and continue pairing every grade with next steps. Clear structure with autonomy support is a balance I already practise through Motivational Interviewing (Ryan & Deci, 2020).",
+    note:{cls:"ok", t:"Commitment", x:"The goal is for students to use grades as information rather than as measures of their worth."},
+    reg:3, goal:true, cite:"Ryan & Deci (2020)"
+  }
+];
+
+let lens = "cur";
+let selected = "yale";
+const opened = new Set();
+
+const rowsEl = document.getElementById('rows');
+const detailEl = document.getElementById('detail');
+const closingEl = document.getElementById('closing');
+const valHead = document.getElementById('valHead');
+const lensHint = document.getElementById('lensHint');
+const openedCount = document.getElementById('openedCount');
+const chart = document.getElementById('chart');
+
+function renderRows(){
+  rowsEl.innerHTML = entries.map(e=>`
+    <button class="jrow${e.opening?' opening':''}${e.forward?' forward':''}${e.id===selected?' sel':''}" data-id="${e.id}" aria-pressed="${e.id===selected}">
+      <span class="date">${e.date}<small>${e.dateSub}</small></span>
+      <span class="acct">${e.acct}<small>${e.acctSub}</small></span>
+      <span class="mark">${e.mark}</span>
+      <span class="val ${lens}"><span class="tag">${lens==="cur"?"Bought":"Told me"}</span>${e[lens]}</span>
+    </button>`).join('');
+  rowsEl.querySelectorAll('.jrow').forEach(b=>b.addEventListener('click',()=>select(b.dataset.id)));
+  valHead.textContent = lens==="cur" ? "Exchange value" : "Information value";
+  valHead.className = 'valcol ' + lens;
+  lensHint.textContent = lens==="cur" ? "what the mark bought" : "what the mark told me";
+  document.querySelectorAll('.lensbar .toggle button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.lens===lens));
+}
+
+function renderDetail(){
+  const e = entries.find(x=>x.id===selected);
+  const reg = e.reg===null ? '' : `
+    <div class="regline"><span class="rl">Motivation it left me with:</span>
+      <span class="regchip ${e.reg>=3?'high':'low'}">${REG[e.reg]} regulation${e.goal?' (goal)':''}</span>
+    </div>`;
+  detailEl.innerHTML = `
+    <div><div class="d-label">${e.label}</div><h2>${e.title}</h2></div>
+    <div class="two">
+      <div class="side cur${lens==="info"?' dim':''}"><b>Exchange value · what it bought</b>${e.curLong}</div>
+      <div class="side info${lens==="cur"?' dim':''}"><b>Information value · what it told me</b>${e.infoLong}</div>
+    </div>
+    <div class="note ${e.note.cls}"><b>${e.note.t}</b>${e.note.x}</div>
+    ${reg}
+    <div class="cite">${e.cite}</div>`;
+}
+
+function renderChart(){
+  const pts = entries.filter(e=>e.reg!==null);
+  const L=118, R=620, T=36, B=200;
+  const y = r => B - r*(B-T)/4;
+  const x = i => L + 30 + i*((R-L-60)/(pts.length-1));
+  let s = '';
+  REG.forEach((r,i)=>{
+    const yy=y(i);
+    s += `<line x1="${L}" x2="${R}" y1="${yy}" y2="${yy}" stroke="#D8D8D8" stroke-width="1" ${i===0||i===4?'':'stroke-dasharray="3 4"'}/>`;
+    s += `<text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="11" font-weight="700" fill="${i>=3?'#0077CA':i===0?'#E75D2A':'#5B6770'}">${r}</text>`;
+  });
+  s += `<text x="${L-10}" y="${B+16}" text-anchor="end" font-size="9.5" fill="#5B6770" letter-spacing="1">CONTROLLED</text>`;
+  s += `<text x="${L-10}" y="${T-18}" text-anchor="end" font-size="9.5" fill="#0077CA" letter-spacing="1">AUTONOMOUS</text>`;
+  // path: solid through the past, dashed into the forward entry
+  const past = pts.filter(p=>!p.goal);
+  let d = past.map((p,i)=>`${i?'L':'M'} ${x(i)} ${y(p.reg)}`).join(' ');
+  s += `<path d="${d}" fill="none" stroke="#003C71" stroke-width="2.5"/>`;
+  const gi = pts.findIndex(p=>p.goal);
+  if(gi>0) s += `<path d="M ${x(gi-1)} ${y(pts[gi-1].reg)} L ${x(gi)} ${y(pts[gi].reg)}" fill="none" stroke="#0077CA" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+  pts.forEach((p,i)=>{
+    const sel = p.id===selected;
+    const col = p.goal ? '#0077CA' : (p.reg>=3 ? '#0077CA' : p.reg===0 ? '#E75D2A' : '#003C71');
+    s += `<g class="pt" tabindex="0" role="button" data-id="${p.id}" aria-label="Open entry: ${p.date}, ${p.acct}, ${REG[p.reg]}${p.goal?' goal':''}">
+      <circle class="ring" cx="${x(i)}" cy="${y(p.reg)}" r="${sel?13:0}" fill="none" stroke="#E75D2A" stroke-width="2"/>
+      <circle cx="${x(i)}" cy="${y(p.reg)}" r="8" fill="${p.goal?'#FFFFFF':col}" stroke="${col}" stroke-width="2.5"/>
+      <text x="${x(i)}" y="${B+22}" text-anchor="middle" font-size="11" font-weight="700" fill="${sel?'#E75D2A':'#003C71'}">${p.date}</text>
+      <text x="${x(i)}" y="${B+36}" text-anchor="middle" font-size="10" fill="#5B6770">${p.mark}</text>
+    </g>`;
+  });
+  chart.querySelectorAll('g,path,line,text:not(title):not(desc)').forEach(n=>{ if(n.parentNode===chart) n.remove(); });
+  chart.insertAdjacentHTML('beforeend', s);
+  chart.querySelectorAll('.pt').forEach(g=>{
+    g.addEventListener('click',()=>select(g.dataset.id));
+    g.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(g.dataset.id);} });
+  });
+}
+
+function renderClosing(){
+  openedCount.textContent = `${opened.size} of ${entries.length} entries opened`;
+  if(opened.size===entries.length){
+    closingEl.className='closing posted';
+    closingEl.innerHTML=`<b>Closing entry · Reconciled</b>Every mark in this ledger bought something, but only some of them taught me anything. The transcript keeps the exchange value; the learner needs the information value. The information I most needed came from my Grade 10 phone call and the comments on my diaries, and neither appears on a transcript. The diary comments came with a chance to revise, and they are what moved my motivation upward. As an instructor, I can make sure the information arrives first.`;
+  } else {
+    closingEl.className='closing';
+    closingEl.innerHTML=`<b>Closing entry · Unreconciled</b>${entries.length-opened.size} entr${entries.length-opened.size===1?'y has':'ies have'} not been opened yet. A ledger can't be reconciled from the totals alone.`;
+  }
+}
+
+function select(id){
+  selected = id; opened.add(id);
+  renderRows(); renderDetail(); renderChart(); renderClosing();
+}
+
+document.querySelectorAll('.lensbar .toggle button').forEach(b=>b.addEventListener('click',()=>{
+  lens = b.dataset.lens; renderRows(); renderDetail();
+}));
+
+// Guided tour: each entry read first as currency, then as information.
+const tourBtn = document.getElementById('tourBtn');
+const steps = [];
+entries.forEach(e=>{ steps.push([e.id,"cur"]); steps.push([e.id,"info"]); });
+let step = -1;
+tourBtn.addEventListener('click',()=>{
+  step++;
+  if(step>=steps.length){
+    step=-1; lens="cur"; opened.clear(); select("yale"); opened.clear(); opened.add("yale"); renderClosing();
+    tourBtn.textContent="▶ Audit the exchange"; return;
+  }
+  const [id,l] = steps[step];
+  lens = l; select(id);
+  tourBtn.textContent = step===steps.length-1 ? "↺ Reset the ledger" : (l==="cur" ? "▶ Read it as information" : "▶ Next entry");
+  detailEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+select("yale");
+</script>
+</body>
+</html>
